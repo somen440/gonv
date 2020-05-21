@@ -45,6 +45,17 @@ func main() {
 				},
 				Action: reflectAction,
 			},
+			{
+				Name:  "generate",
+				Usage: "generate migration template.",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "output",
+						Value: "migrations",
+					},
+				},
+				Action: generateAction,
+			},
 		},
 	}
 
@@ -66,4 +77,9 @@ func reflectAction(c *cli.Context) error {
 	}
 	reflect := NewReflect(conf, c.String("output"))
 	return reflect.Exec()
+}
+
+func generateAction(c *cli.Context) error {
+	generate := NewGenerate(c.String("output"))
+	return generate.Exec()
 }

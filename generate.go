@@ -24,7 +24,9 @@ func NewGenerate(output string) *Generate {
 // Exec 実行
 func (g *Generate) Exec() error {
 	if _, err := os.Stat(g.output); os.IsNotExist(err) {
-		os.MkdirAll(g.output, os.ModePerm)
+		if err := os.MkdirAll(g.output, os.ModePerm); err != nil {
+			return err
+		}
 	}
 
 	version := strconv.Itoa(int(time.Now().Unix()))
@@ -49,11 +51,15 @@ func (g *Generate) Exec() error {
 	fmt.Scan(&table)
 
 	upF := filepath.Join(g.output, fmt.Sprintf("%s_%s_%s.up.sql", version, title, table))
-	ioutil.WriteFile(upF, []byte(""), 0644)
+	if err := ioutil.WriteFile(upF, []byte(""), 0644); err != nil {
+		return err
+	}
 	fmt.Println(upF)
 
 	downF := filepath.Join(g.output, fmt.Sprintf("%s_%s_%s.down.sql", version, title, table))
-	ioutil.WriteFile(downF, []byte(""), 0644)
+	if err := ioutil.WriteFile(downF, []byte(""), 0644); err != nil {
+		return err
+	}
 	fmt.Println(downF)
 
 	return nil

@@ -30,7 +30,9 @@ func (r *Reflect) Exec() error {
 	}
 
 	if _, err := os.Stat(r.output); os.IsNotExist(err) {
-		os.MkdirAll(r.output, os.ModePerm)
+		if err := os.MkdirAll(r.output, os.ModePerm); err != nil {
+			return err
+		}
 	}
 
 	for _, result := range results {

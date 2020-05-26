@@ -19,7 +19,7 @@ func NewGDO(conf *DBConfig) *GDO {
 	errs := []error{}
 	db, err := sql.Open(conf.Driver.AsString(), conf.DataSourceName())
 	if err != nil {
-		errs = append(errs, err)
+		errs = append(errs, err) // nolint: staticcheck
 	}
 	return &GDO{
 		conf: conf,

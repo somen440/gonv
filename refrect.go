@@ -29,10 +29,11 @@ func (r *Reflect) Exec() error {
 		return errors.New(r.gdo.Error())
 	}
 
-	if _, err := os.Stat(r.output); os.IsNotExist(err) {
-		if err := os.MkdirAll(r.output, os.ModePerm); err != nil {
-			return err
-		}
+	if err := os.RemoveAll(r.output); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(r.output, os.ModePerm); err != nil {
+		return err
 	}
 
 	for _, result := range results {

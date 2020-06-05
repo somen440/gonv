@@ -13,3 +13,15 @@ lint:
 .PHONY: fmt
 fmt:
 	go fmt ./...
+
+.PHONY: up
+up:
+	docker-compose up -d mysql57
+
+.PHONY: down
+down:
+	docker-compose down
+
+.PHONY: exec-db
+exec-db:
+	docker-compose exec mysql57 mysql -uroot -ptest test

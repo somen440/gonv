@@ -1,4 +1,4 @@
-package main
+package gonv
 
 import (
 	"log"
@@ -56,6 +56,36 @@ func main() {
 				},
 				Action: generateAction,
 			},
+			{
+				Name:      "diff",
+				Usage:     "diff schema <-> database.",
+				ArgsUsage: "<schema> <database>",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "driver",
+						Value: "mysql",
+					},
+					&cli.StringFlag{
+						Name:    "user",
+						Aliases: []string{"u"},
+					},
+					&cli.StringFlag{
+						Name:    "password",
+						Aliases: []string{"p"},
+					},
+					&cli.StringFlag{
+						Name:    "host",
+						Value:   "localhost",
+						Aliases: []string{"H"},
+					},
+					&cli.StringFlag{
+						Name:    "port",
+						Value:   "3306",
+						Aliases: []string{"P"},
+					},
+				},
+				Action: diffAction,
+			},
 		},
 	}
 
@@ -82,4 +112,20 @@ func reflectAction(c *cli.Context) error {
 func generateAction(c *cli.Context) error {
 	generate := NewGenerate(c.String("output"))
 	return generate.Exec()
+}
+
+func diffAction(c *cli.Context) error {
+	schema := c.Args().Get(0)
+	database := c.Args().Get(1)
+
+	conf := &DBConfig{
+		Driver:   DbDriver(c.String("driver")),
+		User:     c.String("user"),
+		Password: c.String("password"),
+		Host:     c.String("host"),
+		Port:     c.String("port"),
+		Database: database,
+	}
+	diff := NewDiff(conf, schema)
+	return diff.Exec()
 }

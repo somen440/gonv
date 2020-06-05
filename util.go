@@ -1,4 +1,4 @@
-package main
+package gonv
 
 // InSlice haystack slice 中に needle が含まれるか
 func InSlice(needle string, haystack []string) bool {

@@ -2,21 +2,11 @@ package gonv
 
 // Diff スキーマと db の diff を取る
 type Diff struct {
-	before *DatabaseStructure
-	after  *DatabaseStructure
 }
 
 // NewDiff Diff object の生成
 func NewDiff(conf *DBConfig, schema string) *Diff {
-	gdo := NewGDO(conf)
-
-	before := gdo.CreateDatabaseStructure()
-	after := CreateDatabaseStructureFromSchema(gdo, schema)
-
-	return &Diff{
-		before: before,
-		after:  after,
-	}
+	return &Diff{}
 }
 
 // Exec 実行

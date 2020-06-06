@@ -2,7 +2,9 @@ package gonv
 
 import (
 	"database/sql"
+	"errors"
 	"strings"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -105,4 +107,75 @@ func (gdo *GDO) ShowCreateTable(table string) *ShowCreateTableResult {
 	}
 
 	return &result
+}
+
+// SwitchDb switch db
+func (gdo *GDO) SwitchDb(name string) error {
+	if gdo.HasError() {
+		return errors.New(gdo.Error())
+	}
+	_, err := gdo.db.Exec("use " + name)
+	return err
+}
+
+// ShowTableStatusLikeResult SHOW TABLE STATUS LIKE result
+type ShowTableStatusLikeResult struct {
+	Name          string
+	Engine        string
+	Version       string
+	RowFormat     string
+	Rows          int
+	AvgRowLength  int
+	DataLength    int
+	MaxDataLength int
+	IndexLength   int
+	DataFree      int
+	AutoIncrement int
+	CreateTime    time.Time
+	UpdateTime    time.Time
+	CheckTime     time.Time
+	Collation     string
+	Checksum      string
+	CreateOptions string
+	Comment       string
+}
+
+// ShowTableStatusLike SHOW TABLE STATUS LIKE
+func (gdo *GDO) ShowTableStatusLike(table string) (*ShowTableStatusLikeResult, error) {
+	if gdo.HasError() {
+		return nil, errors.New(gdo.Error())
+	}
+	rows, err := gdo.db.Query("show table status like '" + table + "'")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result *ShowTableStatusLikeResult
+	for rows.Next() {
+		if err := rows.Scan(
+			&result.Name,
+			&result.Engine,
+			&result.Version,
+			&result.RowFormat,
+			&result.Rows,
+			&result.AvgRowLength,
+			&result.DataLength,
+			&result.MaxDataLength,
+			&result.IndexLength,
+			&result.DataFree,
+			&result.AutoIncrement,
+			&result.CreateTime,
+			&result.UpdateTime,
+			&result.CheckTime,
+			&result.Collation,
+			&result.Checksum,
+			&result.CreateOptions,
+			&result.Comment,
+		); err != nil {
+			return nil, err
+		}
+	}
+
+	return result, nil
 }

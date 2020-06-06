@@ -4,8 +4,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
-	"github.com/somen440/gonv"
 )
 
 // ColumnField column field
@@ -127,19 +125,6 @@ func (mc *MySQL57ColumnStructure) IsStored() bool {
 		}
 	}
 	return false
-}
-
-// ToMap return map
-func (mc *MySQL57ColumnStructure) ToMap() (result map[gonv.SchemaKey]interface{}) {
-	result[gonv.ColumnType] = mc.Type
-	if mc.Default != nil {
-		result[gonv.ColumnDefault] = mc.Default
-	}
-	result[gonv.ColumnComment] = mc.Comment
-	if len(mc.Attributes) > 0 {
-		result[gonv.ColumnAttribute] = mc.Attributes
-	}
-	return
 }
 
 // ModifiedColumnStructure modified column

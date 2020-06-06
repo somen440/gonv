@@ -10,7 +10,7 @@ type ColumnStructure interface {
 // ModifiedColumnStructure modified
 type ModifiedColumnStructure interface {
 	GenerateAddQuery() string
-	Column() ColumnStructure
+	GetColumn() ColumnStructure
 }
 
 // IndexStructure index
@@ -27,19 +27,19 @@ type PartitionStructure interface {
 
 // TableStructure table
 type TableStructure interface {
-	Table() string
-	ColumnStructureList() []ColumnStructure
-	IndexStructureList() []IndexStructure
-	Engine() string
-	DefaultCharset() string
-	Collate() string
-	Comment() string
-	Partition() PartitionStructure
+	GetTable() string
+	GetColumnStructureList() []ColumnStructure
+	GetIndexStructureList() []IndexStructure
+	GetEngine() string
+	GetDefaultCharset() string
+	GetCollate() string
+	GetComment() string
+	GetPartition() PartitionStructure
 }
 
 // ViewStructure view
 type ViewStructure interface {
-	Name() string
-	CompareQuery() string
-	CreateQuery() string
+	GetName() string
+	GetCompareQuery() string
+	GetCreateQuery() string
 }

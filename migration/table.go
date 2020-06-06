@@ -116,31 +116,31 @@ type TableCreateMigration struct {
 func NewTableCreateMigration(ts TableStructure) *TableCreateMigration {
 	migration := &TableCreateMigration{}
 
-	migration.Table = ts.Table()
+	migration.Table = ts.GetTable()
 	migration.Type = CreateType
 
-	migration.Up = "CREATE TABLE " + ts.Table() + " (\n"
+	migration.Up = "CREATE TABLE " + ts.GetTable() + " (\n"
 
 	bodies := []string{}
-	for _, column := range ts.ColumnStructureList() {
+	for _, column := range ts.GetColumnStructureList() {
 		bodies = append(bodies, column.GenerateCreateQuery())
 	}
-	for _, index := range ts.IndexStructureList() {
+	for _, index := range ts.GetIndexStructureList() {
 		bodies = append(bodies, index.GenerateCreateQuery())
 	}
 	migration.Up += " " + strings.Join(bodies, ",\n ") + "\n"
 
 	migration.Up += ")"
-	migration.Up += " ENGINE=" + ts.Engine()
-	migration.Up += " DEFAULT CHARASET=" + ts.DefaultCharset()
-	migration.Up += " COLLATE=" + ts.Collate()
-	migration.Up += " COMMENT=" + ts.Comment()
+	migration.Up += " ENGINE=" + ts.GetEngine()
+	migration.Up += " DEFAULT CHARASET=" + ts.GetDefaultCharset()
+	migration.Up += " COLLATE=" + ts.GetCollate()
+	migration.Up += " COMMENT=" + ts.GetComment()
 
-	if ts.Partition() != nil {
-		migration.Up += fmt.Sprintf("\n/*!50100 %s */", ts.Partition().Query())
+	if ts.GetPartition() != nil {
+		migration.Up += fmt.Sprintf("\n/*!50100 %s */", ts.GetPartition().Query())
 	}
 
-	migration.Down = "DROP TABLE " + ts.Table()
+	migration.Down = "DROP TABLE " + ts.GetTable()
 
 	return migration
 }
@@ -153,7 +153,7 @@ type TableDropMigration struct {
 // NewTableDropMigration create TableDropMigration
 func NewTableDropMigration(ts TableStructure) *TableDropMigration {
 	migration := &TableDropMigration{}
-	migration.Table = ts.Table()
+	migration.Table = ts.GetTable()
 	migration.Type = DropType
 	creation := NewTableCreateMigration(ts)
 	migration.Up = creation.Down
@@ -172,15 +172,15 @@ type ViewAlterMigration struct {
 // NewViewAlterMigration return ViewAlterMigration
 func NewViewAlterMigration(before, after ViewStructure, allRenamedNameList [][]string) *ViewAlterMigration {
 	migration := &ViewAlterMigration{}
-	migration.Table = after.Name()
+	migration.Table = after.GetName()
 	migration.Type = CreateOrReplaceType
-	migration.IsAltered = before.CompareQuery() != after.CompareQuery()
+	migration.IsAltered = before.GetCompareQuery() != after.GetCompareQuery()
 	if !migration.IsAltered {
 		return migration
 	}
 
-	migration.Up = strings.Replace(after.CompareQuery(), "CREATE", "CREATE OR REPLACE", 0)
-	migration.Down = strings.Replace(before.CompareQuery(), "CREATE", "CREATE OR REPLACE", 0)
+	migration.Up = strings.Replace(after.GetCompareQuery(), "CREATE", "CREATE OR REPLACE", 0)
+	migration.Down = strings.Replace(before.GetCompareQuery(), "CREATE", "CREATE OR REPLACE", 0)
 
 	for _, nameList := range allRenamedNameList {
 		count := 0
@@ -194,7 +194,7 @@ func NewViewAlterMigration(before, after ViewStructure, allRenamedNameList [][]s
 		}
 	}
 
-	migration.Down = strings.Replace(migration.Down, before.Name(), after.Name(), 0)
+	migration.Down = strings.Replace(migration.Down, before.GetName(), after.GetName(), 0)
 
 	return migration
 }
@@ -207,10 +207,10 @@ type ViewCreateMigration struct {
 // NewViewCreateMigration create ViewCreateMigration
 func NewViewCreateMigration(view ViewStructure) *ViewCreateMigration {
 	migration := &ViewCreateMigration{}
-	migration.Table = view.Name()
+	migration.Table = view.GetName()
 	migration.Type = ViewCreateType
-	migration.Up = view.CreateQuery()
-	migration.Down = "DROP VIEW " + view.Name() + ";"
+	migration.Up = view.GetCreateQuery()
+	migration.Down = "DROP VIEW " + view.GetName() + ";"
 	return migration
 }
 
@@ -222,7 +222,7 @@ type ViewDropMigration struct {
 // NewViewDropMigration return ViewDropMigration
 func NewViewDropMigration(view ViewStructure) *ViewDropMigration {
 	migration := &ViewDropMigration{}
-	migration.Table = view.Name()
+	migration.Table = view.GetName()
 	migration.Type = ViewDropType
 	create := NewViewCreateMigration(view)
 	migration.Up = create.Down
@@ -240,9 +240,9 @@ type ViewRenameMigration struct {
 // NewViewRenameMigration create ViewRenameMigration
 func NewViewRenameMigration(before, after ViewStructure) *ViewRenameMigration {
 	migration := &ViewRenameMigration{}
-	migration.Table = after.Name()
+	migration.Table = after.GetName()
 	migration.Type = ViewRenameType
-	migration.Up = "RENAME TABLE " + before.Name() + " TO " + after.Name() + ";"
-	migration.Down = "RENAME TABLE " + after.Name() + " TO " + before.Name() + ";"
+	migration.Up = "RENAME TABLE " + before.GetName() + " TO " + after.GetName() + ";"
+	migration.Down = "RENAME TABLE " + after.GetName() + " TO " + before.GetName() + ";"
 	return migration
 }

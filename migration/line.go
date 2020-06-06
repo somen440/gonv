@@ -24,7 +24,7 @@ func NewColumnAddMigrationLine(list []ModifiedColumnStructure) *ColumnAddMigrati
 
 	for _, column := range list {
 		line.upLineList = append(line.upLineList, column.GenerateAddQuery())
-		line.downLineList = append(line.downLineList, column.Column().GenerateBaseQuery())
+		line.downLineList = append(line.downLineList, column.GetColumn().GenerateBaseQuery())
 	}
 
 	return line

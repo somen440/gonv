@@ -1,4 +1,4 @@
-package gonv
+package main
 
 // Diff スキーマと db の diff を取る
 type Diff struct {

@@ -29,7 +29,7 @@ type TableStructure struct {
 	ColumnStructureList []*MySQL57ColumnStructure
 	IndexStructureList  []*IndexStructure
 	partition           PartitionStructure
-	properties          []string
+	Properties          []string
 }
 
 // ColumnStructureMap column map

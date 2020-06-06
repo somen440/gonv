@@ -1,4 +1,4 @@
-package gonv
+package main
 
 import "strings"
 

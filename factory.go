@@ -1,4 +1,4 @@
-package gonv
+package main
 
 import (
 	"fmt"
@@ -20,14 +20,14 @@ func (f *Factory) CreateTableStructure(dbName, tableName string) (*structure.Tab
 	if err != nil {
 		return nil, err
 	}
-	// createTable := f.gdo.ShowCreateTable(tableName)
+	createTable := f.gdo.ShowCreateTable(tableName)
+	defaultCharaset := SearchDefaultCharaset(createTable.schema)
 
 	return &structure.TableStructure{
-		Table:   tableName,
-		Comment: tableStatus.Comment,
-		Engine:  tableStatus.Engine,
-		// NatableName,
-		// tableStatus.Comment,
-		// tableStatus.Engine,
+		Table:          tableName,
+		Comment:        tableStatus.Comment,
+		Engine:         tableStatus.Engine,
+		Collate:        tableStatus.Collation,
+		DefaultCharset: defaultCharaset,
 	}, nil
 }

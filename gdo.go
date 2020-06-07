@@ -226,7 +226,7 @@ order by PARTITION_ORDINAL_POSITION asc;
 	}
 	defer rows.Close()
 
-	var result []SelectPartitionsResult
+	var results []SelectPartitionsResult
 	for rows.Next() {
 		var col SelectPartitionsResult
 		if err := rows.Scan(
@@ -258,9 +258,10 @@ order by PARTITION_ORDINAL_POSITION asc;
 		); err != nil {
 			return nil, err
 		}
+		results = append(results, col)
 	}
 
-	return result, nil
+	return results, nil
 }
 
 // SelectColumnsResult select information_schema.COLUMNS result

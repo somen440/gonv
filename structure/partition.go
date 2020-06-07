@@ -91,19 +91,19 @@ func (ps *PartitionPartStructure) Query() (query string) {
 
 // PartitionLongStructure partition long
 type PartitionLongStructure struct {
-	Type    string
-	Value   string
-	PartMap map[int]PartitionPartStructure
+	Type  string
+	Value string
+	Parts []PartitionPartStructure
 }
 
 // Query return query
 func (ps *PartitionLongStructure) Query() (query string) {
-	query = "PARTITION BY " + ps.Type + "(" + ps.Value + ") (\n"
+	query = "PARTITION BY " + ps.Type + "(" + ps.Value + ")\n("
 	body := []string{}
-	for _, part := range ps.PartMap {
+	for _, part := range ps.Parts {
 		body = append(body, part.Query())
 	}
-	query += " " + strings.Join(body, ",\n )")
+	query += strings.Join(body, ",\n ") + ")"
 	return
 }
 

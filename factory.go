@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/somen440/gonv/structure"
@@ -73,26 +74,29 @@ func (f *Factory) createPartitionStructure(dbName, tableName string) (structure.
 	type partitionRows map[PartitionOrdinalPosition]PartitionSummary
 	type PartitionRowsMap map[PartitionExpression]partitionRows
 	type PartitionRowsMapGroup map[PartitionMethod]PartitionRowsMap
-	var partitionRowsMapGroup PartitionRowsMapGroup
 
+	partitionRowsMapGroup := PartitionRowsMapGroup{}
 	methodMap := map[PartitionMethod][]SelectPartitionsResult{}
 	for _, partition := range partitions {
 		method := PartitionMethod(partition.PartitionMethod.String)
 		methodMap[method] = append(methodMap[method], partition)
 	}
 	for method, list := range methodMap {
-		var rowsMap PartitionRowsMap
+		rowsMap := PartitionRowsMap{}
 		for _, partition := range list {
-			var rows partitionRows
 			ordinal := PartitionOrdinalPosition(partition.PartitionOrdinalPosition.Int32)
-			rows[ordinal] = PartitionSummary{
+			expression := PartitionExpression(partition.PartitionExpression.String)
+
+			_, ok := rowsMap[expression]
+			if !ok {
+				rowsMap[expression] = partitionRows{}
+			}
+
+			rowsMap[expression][ordinal] = PartitionSummary{
 				Name:        partition.PartitionName.String,
 				Description: partition.PartitionDescription.String,
 				Comment:     partition.PartitionComment,
 			}
-
-			expression := PartitionExpression(partition.PartitionExpression.String)
-			rowsMap[expression] = rows
 		}
 		partitionRowsMapGroup[method] = rowsMap
 	}
@@ -111,20 +115,28 @@ func (f *Factory) createPartitionStructure(dbName, tableName string) (structure.
 			}
 			break
 		case structure.PartitionTypeLong:
-			for value, raws := range group {
-				var partMap map[int]structure.PartitionPartStructure
-				for order, summary := range raws {
-					partMap[int(order)] = structure.PartitionPartStructure{
+			for value, rows := range group {
+				parts := []structure.PartitionPartStructure{}
+				var orders []int
+				for order := range rows {
+					orders = append(orders, int(order))
+				}
+				sort.Ints(orders)
+
+				for _, order := range orders {
+					summary := rows[PartitionOrdinalPosition(order)]
+					parts = append(parts, structure.PartitionPartStructure{
 						Name:     summary.Name,
 						Operator: structure.PartitionMethodOperatorMap[m],
 						Value:    summary.Description,
 						Comment:  summary.Comment,
-					}
+					})
 				}
+
 				partition = &structure.PartitionLongStructure{
-					Type:    m,
-					Value:   string(value),
-					PartMap: partMap,
+					Type:  m,
+					Value: string(value),
+					Parts: parts,
 				}
 			}
 			break

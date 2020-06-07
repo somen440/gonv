@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Diff スキーマと db の diff を取る
 type Diff struct {

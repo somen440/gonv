@@ -54,6 +54,18 @@ func (ts *TableStructure) String() string {
 		out.WriteString("\t" + column.GenerateCreateQuery() + "\n")
 	}
 
+	if len(ts.IndexStructureList) > 0 {
+		out.WriteString("index:\n")
+		for _, index := range ts.IndexStructureList {
+			out.WriteString("\t" + index.GenerateCreateQuery() + "\n")
+		}
+	}
+
+	if ts.Partition != nil {
+		out.WriteString("partitions:\n")
+		out.WriteString(ts.Partition.Query())
+	}
+
 	return out.String()
 }
 

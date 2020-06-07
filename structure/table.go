@@ -26,14 +26,14 @@ type TableStructure struct {
 	Engine              string
 	DefaultCharset      string
 	Collate             string
-	ColumnStructureList []*MySQL57ColumnStructure
-	IndexStructureList  []*IndexStructure
+	ColumnStructureList []MySQL57ColumnStructure
+	IndexStructureList  []IndexStructure
 	Partition           PartitionStructure
 	Properties          []string
 }
 
 // ColumnStructureMap column map
-type ColumnStructureMap map[ColumnField]*MySQL57ColumnStructure
+type ColumnStructureMap map[ColumnField]MySQL57ColumnStructure
 
 // ColumnFieldMap column map
 type ColumnFieldMap map[ColumnField]bool
@@ -62,7 +62,7 @@ func (ts *TableStructure) GetOrderColumnStructureMap(diff, renamed ColumnStructu
 }
 
 // IndexMap index key structure map
-type IndexMap map[IndexKey]*IndexStructure
+type IndexMap map[IndexKey]IndexStructure
 
 // GetIndexMap return index map
 func (ts *TableStructure) GetIndexMap() (result IndexMap) {
@@ -86,7 +86,7 @@ func (ts *TableStructure) GetDiffColumnList(target *TableStructure) (result Colu
 }
 
 // ModifiedColumnStructureSetMap modified column
-type ModifiedColumnStructureSetMap map[ColumnField]*ModifiedColumnStructureSet
+type ModifiedColumnStructureSetMap map[ColumnField]ModifiedColumnStructureSet
 
 // GenerateModifiedColumnStructureSetMap return a
 func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
@@ -98,12 +98,12 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 		afterField, ok := renamed[beforeField]
 		if ok {
 			after := targetMap[afterField]
-			result[beforeField] = &ModifiedColumnStructureSet{
-				Up: &ModifiedColumnStructure{
+			result[beforeField] = ModifiedColumnStructureSet{
+				Up: ModifiedColumnStructure{
 					BeforeField: beforeField,
 					Column:      after,
 				},
-				Down: &ModifiedColumnStructure{
+				Down: ModifiedColumnStructure{
 					BeforeField: afterField,
 					Column:      before,
 				},
@@ -111,12 +111,12 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 		}
 		after := targetMap[beforeField]
 		if before.IsChanged(after) {
-			result[beforeField] = &ModifiedColumnStructureSet{
-				Up: &ModifiedColumnStructure{
+			result[beforeField] = ModifiedColumnStructureSet{
+				Up: ModifiedColumnStructure{
 					BeforeField: beforeField,
 					Column:      after,
 				},
-				Down: &ModifiedColumnStructure{
+				Down: ModifiedColumnStructure{
 					BeforeField: beforeField,
 					Column:      before,
 				},

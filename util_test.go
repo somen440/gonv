@@ -1,6 +1,7 @@
 package main
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -64,4 +65,17 @@ func TestContainsAutoIncrement(t *testing.T) {
 		actual := ContainsAutoIncrement(tt.target)
 		assert.Equal(t, tt.expected, actual)
 	}
+}
+
+func TestDeepEqualStruct(t *testing.T) {
+	type User struct {
+		Name string
+	}
+	a := &User{
+		Name: "a",
+	}
+	b := User{
+		Name: "a",
+	}
+	assert.True(t, reflect.DeepEqual(a, &b))
 }

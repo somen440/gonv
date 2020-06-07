@@ -1,7 +1,6 @@
 package structure
 
 import (
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -78,8 +77,15 @@ func (mc *MySQL57ColumnStructure) DefaultNecessaryQuot() string {
 }
 
 // IsChanged is not match return true
-func (mc *MySQL57ColumnStructure) IsChanged(target *MySQL57ColumnStructure) bool {
-	return !reflect.DeepEqual(mc, target)
+func (mc *MySQL57ColumnStructure) IsChanged(target MySQL57ColumnStructure) bool {
+	return !(mc.Type == target.Type &&
+		mc.Comment == target.Comment &&
+		mc.IsNullable() == target.IsNullable() &&
+		mc.IsUnsigned() == target.IsUnsigned() &&
+		mc.Default == target.Default &&
+		mc.IsAutoIncrement() == target.IsAutoIncrement() &&
+		mc.CollationName == target.CollationName &&
+		mc.IsStored() == target.IsStored())
 }
 
 // IsUnsigned has unsigned true
@@ -130,7 +136,7 @@ func (mc *MySQL57ColumnStructure) IsStored() bool {
 // ModifiedColumnStructure modified column
 type ModifiedColumnStructure struct {
 	BeforeField   ColumnField
-	Column        *MySQL57ColumnStructure
+	Column        MySQL57ColumnStructure
 	ModifiedAfter string
 }
 
@@ -175,8 +181,8 @@ func (ms *ModifiedColumnStructure) SetModifiedAfter(modifier string) {
 
 // ModifiedColumnStructureSet up down set
 type ModifiedColumnStructureSet struct {
-	Up   *ModifiedColumnStructure
-	Down *ModifiedColumnStructure
+	Up   ModifiedColumnStructure
+	Down ModifiedColumnStructure
 }
 
 // DroppedColumnFielList drop column list

@@ -59,7 +59,7 @@ func main() {
 			{
 				Name:      "diff",
 				Usage:     "diff schema <-> database.",
-				ArgsUsage: "<schema> <database>",
+				ArgsUsage: "<database>",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:  "driver",
@@ -115,8 +115,8 @@ func generateAction(c *cli.Context) error {
 }
 
 func diffAction(c *cli.Context) error {
-	schema := c.Args().Get(0)
-	database := c.Args().Get(1)
+	database := c.Args().Get(0)
+	// schema := c.Args().Get(1)
 
 	conf := &DBConfig{
 		Driver:   DbDriver(c.String("driver")),
@@ -126,6 +126,6 @@ func diffAction(c *cli.Context) error {
 		Port:     c.String("port"),
 		Database: database,
 	}
-	diff := NewDiff(conf, schema)
-	return diff.Exec()
+	diff := NewDiff(conf)
+	return diff.Exec(database)
 }

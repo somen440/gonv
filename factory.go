@@ -19,23 +19,35 @@ func (f *Factory) CreateTableStructure(dbName, tableName string) (*structure.Tab
 	}
 	tableStatus, err := f.gdo.ShowTableStatusLike(tableName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ShowTableStatusLike error: %w", err)
 	}
 	createTable := f.gdo.ShowCreateTable(tableName)
 	defaultCharaset := SearchDefaultCharaset(createTable.schema)
 
 	partition, err := f.createPartitionStructure(dbName, tableName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("createPartitionStructure error: %w", err)
+	}
+
+	columns, err := f.createColumnStructureList(dbName, tableName)
+	if err != nil {
+		return nil, fmt.Errorf("createColumnStructureList error: %w", err)
+	}
+
+	indexes, err := f.createIndexStructureList(tableName)
+	if err != nil {
+		return nil, fmt.Errorf("createIndexStructureList error: %w", err)
 	}
 
 	return &structure.TableStructure{
-		Table:          tableName,
-		Comment:        tableStatus.Comment,
-		Engine:         tableStatus.Engine,
-		Collate:        tableStatus.Collation,
-		DefaultCharset: defaultCharaset,
-		Partition:      partition,
+		Table:               tableName,
+		Comment:             tableStatus.Comment,
+		Engine:              tableStatus.Engine,
+		Collate:             tableStatus.Collation,
+		DefaultCharset:      defaultCharaset,
+		Partition:           partition,
+		ColumnStructureList: columns,
+		IndexStructureList:  indexes,
 	}, nil
 }
 
@@ -44,7 +56,9 @@ func (f *Factory) createPartitionStructure(dbName, tableName string) (structure.
 	if err != nil {
 		return nil, err
 	}
-	if len(partitions) == 0 {
+
+	if len(partitions) == 1 && !partitions[0].PartitionMethod.Valid {
+		// not exist partition
 		return nil, nil
 	}
 
@@ -61,28 +75,26 @@ func (f *Factory) createPartitionStructure(dbName, tableName string) (structure.
 	type PartitionRowsMapGroup map[PartitionMethod]PartitionRowsMap
 	var partitionRowsMapGroup PartitionRowsMapGroup
 
-	if len(partitions) > 1 && partitions[0].PartitionMethod != "NULL" {
-		var methodMap map[PartitionMethod][]SelectPartitionsResult
-		for _, partition := range partitions {
-			method := PartitionMethod(partition.PartitionMethod)
-			methodMap[method] = append(methodMap[method], partition)
-		}
-		for method, list := range methodMap {
-			var rowsMap PartitionRowsMap
-			for _, partition := range list {
-				var rows partitionRows
-				ordinal := PartitionOrdinalPosition(partition.PartitionOrdinalPosition)
-				rows[ordinal] = PartitionSummary{
-					Name:        partition.PartitionName,
-					Description: partition.PartitionDescription,
-					Comment:     partition.PartitionComment,
-				}
-
-				expression := PartitionExpression(partition.PartitionExpression)
-				rowsMap[expression] = rows
+	methodMap := map[PartitionMethod][]SelectPartitionsResult{}
+	for _, partition := range partitions {
+		method := PartitionMethod(partition.PartitionMethod.String)
+		methodMap[method] = append(methodMap[method], partition)
+	}
+	for method, list := range methodMap {
+		var rowsMap PartitionRowsMap
+		for _, partition := range list {
+			var rows partitionRows
+			ordinal := PartitionOrdinalPosition(partition.PartitionOrdinalPosition.Int32)
+			rows[ordinal] = PartitionSummary{
+				Name:        partition.PartitionName.String,
+				Description: partition.PartitionDescription.String,
+				Comment:     partition.PartitionComment,
 			}
-			partitionRowsMapGroup[method] = rowsMap
+
+			expression := PartitionExpression(partition.PartitionExpression.String)
+			rowsMap[expression] = rows
 		}
+		partitionRowsMapGroup[method] = rowsMap
 	}
 
 	var partition structure.PartitionStructure
@@ -163,7 +175,49 @@ func (f *Factory) createColumnStructure(column SelectColumnsResult) (structure.M
 		Type:          TrimUnsigned(column.ColumnType),
 		Default:       column.ColumnDefault,
 		Comment:       column.ColumnComment,
-		CollationName: column.CollationName,
+		CollationName: column.CollationName.String,
 		Attributes:    attributes,
 	}, nil
+}
+
+func (f *Factory) createIndexStructureList(tableName string) ([]structure.IndexStructure, error) {
+	indexes, err := f.gdo.ShowIndex(tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	type IndexSummary struct {
+		IsUnique   bool
+		ColumnName string
+		IndexType  string
+	}
+	type IndexSummaryGroup map[string][]IndexSummary
+
+	group := IndexSummaryGroup{}
+	for _, index := range indexes {
+		columnName := index.ColumnName
+		if index.SubPart.Valid {
+			columnName = fmt.Sprintf("%s(%s)", columnName, index.SubPart.String)
+		}
+		group[index.KeyName] = append(group[index.KeyName], IndexSummary{
+			IsUnique:   index.NonUnique == 0,
+			ColumnName: columnName,
+			IndexType:  index.IndexType,
+		})
+	}
+
+	var results []structure.IndexStructure
+	for keyName, list := range group {
+		columnNameList := make([]string, len(list))
+		for i, index := range list {
+			columnNameList[i] = index.ColumnName
+		}
+		results = append(results, structure.NewIndexStructure(
+			keyName,
+			list[0].IndexType,
+			list[0].IsUnique,
+			columnNameList,
+		))
+	}
+	return results, nil
 }

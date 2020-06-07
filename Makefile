@@ -32,6 +32,10 @@ logs-db:
 reflect:
 	go run . reflect -u root -p test -P 33066 test
 
+.PHONY: diff
+diff:
+	go run . diff -u root -p test -P 33066 test
+
 .PHONY: test
 test:
 	go test -v ./...

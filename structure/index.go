@@ -19,6 +19,18 @@ type IndexStructure struct {
 	IsBtree        bool
 }
 
+// NewIndexStructure return IndexStructure
+func NewIndexStructure(keyName, indexType string, isUnique bool, columnNameList []string) IndexStructure {
+	return IndexStructure{
+		Key:            IndexKey(keyName),
+		IndexType:      indexType,
+		ColumnNameList: columnNameList,
+		IsUnique:       isUnique,
+		IsPrimary:      keyName == "PRIMARY",
+		IsBtree:        strings.ToUpper(indexType) == "BTREE",
+	}
+}
+
 // GenerateCreateQuery return create query
 func (is *IndexStructure) GenerateCreateQuery() (query string) {
 	if is.IsPrimary {

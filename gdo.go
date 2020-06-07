@@ -133,10 +133,10 @@ type ShowTableStatusLikeResult struct {
 	DataFree      int
 	AutoIncrement int
 	CreateTime    time.Time
-	UpdateTime    time.Time
-	CheckTime     time.Time
+	UpdateTime    sql.NullTime
+	CheckTime     sql.NullTime
 	Collation     string
-	Checksum      string
+	Checksum      sql.NullString
 	CreateOptions string
 	Comment       string
 }
@@ -152,7 +152,7 @@ func (gdo *GDO) ShowTableStatusLike(table string) (*ShowTableStatusLikeResult, e
 	}
 	defer rows.Close()
 
-	var result *ShowTableStatusLikeResult
+	var result ShowTableStatusLikeResult
 	for rows.Next() {
 		if err := rows.Scan(
 			&result.Name,
@@ -178,7 +178,7 @@ func (gdo *GDO) ShowTableStatusLike(table string) (*ShowTableStatusLikeResult, e
 		}
 	}
 
-	return result, nil
+	return &result, nil
 }
 
 // SelectPartitionsResult select
@@ -186,30 +186,31 @@ type SelectPartitionsResult struct {
 	TableCatalog                string
 	TableSchema                 string
 	TableName                   string
-	PartitionName               string
-	SubPartitionName            string
-	PartitionOrdinalPosition    int
-	SubpartitionOrdinalPosition string
-	PartitionMethod             string
-	SubPartitionMethod          string
-	PartitionExpression         string
-	SubPartitionExpression      string
-	PartitionDescription        string
+	PartitionName               sql.NullString
+	SubPartitionName            sql.NullString
+	PartitionOrdinalPosition    sql.NullInt32
+	SubpartitionOrdinalPosition sql.NullInt32
+	PartitionMethod             sql.NullString
+	SubPartitionMethod          sql.NullString
+	PartitionExpression         sql.NullString
+	SubPartitionExpression      sql.NullString
+	PartitionDescription        sql.NullString
 	TableRows                   int
 	AvgRowLength                int
 	DataLength                  int
-	MaxDataLength               string
+	MaxDataLength               sql.NullString
 	IndexLength                 int
 	DataFree                    int
 	CreateTime                  time.Time
-	UpdateTime                  time.Time
-	CheckTime                   time.Time
-	Checksum                    string
+	UpdateTime                  sql.NullTime
+	CheckTime                   sql.NullTime
+	Checksum                    sql.NullString
 	PartitionComment            string
 	Nodegroup                   string
-	TablespaceName              string
+	TablespaceName              sql.NullString
 }
 
+// SelectPartitions select partition
 func (gdo *GDO) SelectPartitions(dbName, tableName string) ([]SelectPartitionsResult, error) {
 	if gdo.HasError() {
 		return nil, errors.New(gdo.Error())
@@ -269,16 +270,16 @@ type SelectColumnsResult struct {
 	TableName              string
 	ColumnName             string
 	OrdinalPosition        int
-	ColumnDefault          string
+	ColumnDefault          sql.NullString
 	IsNullable             string
 	DataType               string
-	CharacterMaximumLength string
-	CharacterOctetLength   string
-	NumericPrecision       int
-	NumericScale           int
-	DateTimePrecision      int
-	CharacterSetName       string
-	CollationName          string
+	CharacterMaximumLength sql.NullString
+	CharacterOctetLength   sql.NullString
+	NumericPrecision       sql.NullInt32
+	NumericScale           sql.NullInt32
+	DateTimePrecision      sql.NullInt32
+	CharacterSetName       sql.NullString
+	CollationName          sql.NullString
 	ColumnType             string
 	ColumnKey              string
 	Extra                  string
@@ -287,6 +288,7 @@ type SelectColumnsResult struct {
 	GenerationExpression   string
 }
 
+// SelectColumns select column
 func (gdo *GDO) SelectColumns(dbName, tableName string) ([]SelectColumnsResult, int, error) {
 	if gdo.HasError() {
 		return nil, 0, errors.New(gdo.Error())
@@ -335,4 +337,58 @@ order by ORDINAL_POSITION asc;
 	}
 
 	return result, count, nil
+}
+
+// ShowIndexResult show index result
+type ShowIndexResult struct {
+	Table        string
+	NonUnique    int
+	KeyName      string
+	SeqInIndex   int
+	ColumnName   string
+	Collation    string
+	Cardinality  int
+	SubPart      sql.NullString
+	Packed       sql.NullString
+	Null         string
+	IndexType    string
+	Comment      string
+	IndexComment string
+}
+
+// ShowIndex show index
+func (gdo *GDO) ShowIndex(tableName string) ([]ShowIndexResult, error) {
+	if gdo.HasError() {
+		return nil, errors.New(gdo.Error())
+	}
+	rows, err := gdo.db.Query("show index from " + tableName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []ShowIndexResult
+	for rows.Next() {
+		var result ShowIndexResult
+		if err := rows.Scan(
+			&result.Table,
+			&result.NonUnique,
+			&result.KeyName,
+			&result.SeqInIndex,
+			&result.ColumnName,
+			&result.Collation,
+			&result.Cardinality,
+			&result.SubPart,
+			&result.Packed,
+			&result.Null,
+			&result.IndexType,
+			&result.Comment,
+			&result.IndexComment,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, result)
+	}
+
+	return results, nil
 }

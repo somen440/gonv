@@ -23,3 +23,8 @@ func SearchDefaultCharaset(target string) (result string) {
 func TrimUnsigned(target string) (result string) {
 	return strings.Trim(target, " unsigned")
 }
+
+// ContainsAutoIncrement contains auto_increment
+func ContainsAutoIncrement(target string) bool {
+	return strings.Contains(target, "auto_increment")
+}

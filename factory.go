@@ -143,8 +143,27 @@ func (f *Factory) createColumnStructureList(dbName, tableName string) ([]structu
 }
 
 func (f *Factory) createColumnStructure(column SelectColumnsResult) (structure.MySQL57ColumnStructure, error) {
+	var attributes []structure.Attribute
+
+	if strings.Contains(column.Extra, "auto_increment") {
+		attributes = append(attributes, structure.AutoIncrement)
+	}
+	if column.IsNullable == "YES" {
+		attributes = append(attributes, structure.Nullable)
+	}
+	if strings.Contains(column.ColumnType, "unsigned") {
+		attributes = append(attributes, structure.Unsigned)
+	}
+	if strings.Contains(column.Extra, "STORED") {
+		attributes = append(attributes, structure.Stored)
+	}
+
 	return structure.MySQL57ColumnStructure{
-		Field: structure.ColumnField(column.ColumnName),
-		Type:  strings.Replace(column.ColumnType, " unsigned", "", -1),
+		Field:         structure.ColumnField(column.ColumnName),
+		Type:          TrimUnsigned(column.ColumnType),
+		Default:       column.ColumnDefault,
+		Comment:       column.ColumnComment,
+		CollationName: column.CollationName,
+		Attributes:    attributes,
 	}, nil
 }

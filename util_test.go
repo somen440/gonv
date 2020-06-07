@@ -39,8 +39,29 @@ PRIMARY KEY (id)
 }
 
 func TestTrimUnsigned(t *testing.T) {
-	target := "bigint(20) unsigned"
-	expected := "bigint(20)"
-	actual := TrimUnsigned(target)
-	assert.Equal(t, expected, actual)
+	tests := []struct {
+		target   string
+		expected string
+	}{
+		{"bigint(20) unsigned", "bigint(20)"},
+		{"varchar(255)", "varchar(255)"},
+	}
+	for _, tt := range tests {
+		actual := TrimUnsigned(tt.target)
+		assert.Equal(t, tt.expected, actual)
+	}
+}
+
+func TestContainsAutoIncrement(t *testing.T) {
+	tests := []struct {
+		target   string
+		expected bool
+	}{
+		{"auto_increment", true},
+		{"", false},
+	}
+	for _, tt := range tests {
+		actual := ContainsAutoIncrement(tt.target)
+		assert.Equal(t, tt.expected, actual)
+	}
 }

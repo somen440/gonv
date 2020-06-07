@@ -28,7 +28,7 @@ type TableStructure struct {
 	Collate             string
 	ColumnStructureList []*MySQL57ColumnStructure
 	IndexStructureList  []*IndexStructure
-	partition           PartitionStructure
+	Partition           PartitionStructure
 	Properties          []string
 }
 

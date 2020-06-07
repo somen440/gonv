@@ -37,3 +37,10 @@ PRIMARY KEY (id)
 	actual := SearchDefaultCharaset(target)
 	assert.Equal(t, expected, actual)
 }
+
+func TestTrimUnsigned(t *testing.T) {
+	target := "bigint(20) unsigned"
+	expected := "bigint(20)"
+	actual := TrimUnsigned(target)
+	assert.Equal(t, expected, actual)
+}

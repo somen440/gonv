@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -178,4 +179,160 @@ func (gdo *GDO) ShowTableStatusLike(table string) (*ShowTableStatusLikeResult, e
 	}
 
 	return result, nil
+}
+
+// SelectPartitionsResult select
+type SelectPartitionsResult struct {
+	TableCatalog                string
+	TableSchema                 string
+	TableName                   string
+	PartitionName               string
+	SubPartitionName            string
+	PartitionOrdinalPosition    int
+	SubpartitionOrdinalPosition string
+	PartitionMethod             string
+	SubPartitionMethod          string
+	PartitionExpression         string
+	SubPartitionExpression      string
+	PartitionDescription        string
+	TableRows                   int
+	AvgRowLength                int
+	DataLength                  int
+	MaxDataLength               string
+	IndexLength                 int
+	DataFree                    int
+	CreateTime                  time.Time
+	UpdateTime                  time.Time
+	CheckTime                   time.Time
+	Checksum                    string
+	PartitionComment            string
+	Nodegroup                   string
+	TablespaceName              string
+}
+
+func (gdo *GDO) SelectPartitions(dbName, tableName string) ([]SelectPartitionsResult, error) {
+	if gdo.HasError() {
+		return nil, errors.New(gdo.Error())
+	}
+	rows, err := gdo.db.Query(
+		fmt.Sprintf(`select * from information_schema.PARTITIONS
+where table_schema = '%s'
+	and table_name = '%s' 
+order by PARTITION_ORDINAL_POSITION asc;
+`, dbName, tableName))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []SelectPartitionsResult
+	for rows.Next() {
+		var col SelectPartitionsResult
+		if err := rows.Scan(
+			&col.TableCatalog,
+			&col.TableSchema,
+			&col.TableName,
+			&col.PartitionName,
+			&col.SubPartitionName,
+			&col.PartitionOrdinalPosition,
+			&col.SubpartitionOrdinalPosition,
+			&col.PartitionMethod,
+			&col.SubPartitionMethod,
+			&col.PartitionExpression,
+			&col.SubPartitionExpression,
+			&col.PartitionDescription,
+			&col.TableRows,
+			&col.AvgRowLength,
+			&col.DataLength,
+			&col.MaxDataLength,
+			&col.IndexLength,
+			&col.DataFree,
+			&col.CreateTime,
+			&col.UpdateTime,
+			&col.CheckTime,
+			&col.Checksum,
+			&col.PartitionComment,
+			&col.Nodegroup,
+			&col.TablespaceName,
+		); err != nil {
+			return nil, err
+		}
+	}
+
+	return result, nil
+}
+
+// SelectColumnsResult select information_schema.COLUMNS result
+type SelectColumnsResult struct {
+	TableCatalog           string
+	TableSchema            string
+	TableName              string
+	ColumnName             string
+	OrdinalPosition        int
+	ColumnDefault          string
+	IsNullable             string
+	DataType               string
+	CharacterMaximumLength string
+	CharacterOctetLength   string
+	NumericPrecision       int
+	NumericScale           int
+	DateTimePrecision      int
+	CharacterSetName       string
+	CollationName          string
+	ColumnType             string
+	ColumnKey              string
+	Extra                  string
+	Privileges             string
+	ColumnComment          string
+	GenerationExpression   string
+}
+
+func (gdo *GDO) SelectColumns(dbName, tableName string) ([]SelectColumnsResult, int, error) {
+	if gdo.HasError() {
+		return nil, 0, errors.New(gdo.Error())
+	}
+	rows, err := gdo.db.Query(
+		fmt.Sprintf(`select * from information_schema.COLUMNS
+where table_schema = '%s'
+	and table_name = '%s' 
+order by ORDINAL_POSITION asc;
+`, dbName, tableName))
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+	var result []SelectColumnsResult
+
+	count := 0
+	for rows.Next() {
+		var column SelectColumnsResult
+		if err := rows.Scan(
+			&column.TableCatalog,
+			&column.TableSchema,
+			&column.TableName,
+			&column.ColumnName,
+			&column.OrdinalPosition,
+			&column.ColumnDefault,
+			&column.IsNullable,
+			&column.DataType,
+			&column.CharacterMaximumLength,
+			&column.CharacterOctetLength,
+			&column.NumericPrecision,
+			&column.NumericScale,
+			&column.DateTimePrecision,
+			&column.CharacterSetName,
+			&column.CollationName,
+			&column.ColumnType,
+			&column.ColumnKey,
+			&column.Extra,
+			&column.Privileges,
+			&column.ColumnComment,
+			&column.GenerationExpression,
+		); err != nil {
+			return nil, 0, err
+		}
+		count++
+	}
+
+	return result, count, nil
 }

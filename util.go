@@ -18,3 +18,8 @@ func SearchDefaultCharaset(target string) (result string) {
 	result = strings.Replace(result, "DEFAULT CHARSET=", "", -1)
 	return strings.Split(result, " ")[0]
 }
+
+// TrimUnsigned trim <type> unsigned
+func TrimUnsigned(target string) (result string) {
+	return strings.Trim(target, " unsigned")
+}

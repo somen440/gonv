@@ -25,13 +25,15 @@ func (d *Diff) Exec(beforeDbName string) error {
 	defer d.gdo.Close()
 
 	fmt.Println("create table structures")
+	fmt.Println()
+
 	for _, table := range d.gdo.ShowTables() {
-		fmt.Println("table: " + table)
+		fmt.Println("*************************** table: " + table + " ***************************")
 		tableSt, err := d.factory.CreateTableStructure(beforeDbName, table)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%v\n", tableSt)
+		fmt.Println(tableSt.String())
 	}
 
 	return nil

@@ -303,7 +303,7 @@ order by ORDINAL_POSITION asc;
 		return nil, 0, err
 	}
 	defer rows.Close()
-	var result []SelectColumnsResult
+	var results []SelectColumnsResult
 
 	count := 0
 	for rows.Next() {
@@ -334,9 +334,10 @@ order by ORDINAL_POSITION asc;
 			return nil, 0, err
 		}
 		count++
+		results = append(results, column)
 	}
 
-	return result, count, nil
+	return results, count, nil
 }
 
 // ShowIndexResult show index result

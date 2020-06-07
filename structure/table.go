@@ -1,5 +1,10 @@
 package structure
 
+import (
+	"bytes"
+	"strings"
+)
+
 // TableName table name
 type TableName string
 
@@ -30,6 +35,26 @@ type TableStructure struct {
 	IndexStructureList  []IndexStructure
 	Partition           PartitionStructure
 	Properties          []string
+}
+
+// String structure tu string
+func (ts *TableStructure) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("name: " + ts.Table + "\n")
+	out.WriteString("type: " + string(ts.Type) + "\n")
+	out.WriteString("comment: " + ts.Comment + "\n")
+	out.WriteString("engine: " + ts.Engine + "\n")
+	out.WriteString("default_charset: " + ts.DefaultCharset + "\n")
+	out.WriteString("collate: " + ts.Collate + "\n")
+	out.WriteString("properties: " + strings.Join(ts.Properties, ", ") + "\n")
+
+	out.WriteString("columns:\n")
+	for _, column := range ts.ColumnStructureList {
+		out.WriteString("\t" + column.GenerateCreateQuery() + "\n")
+	}
+
+	return out.String()
 }
 
 // ColumnStructureMap column map

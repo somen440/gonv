@@ -173,7 +173,7 @@ func (f *Factory) createColumnStructure(column SelectColumnsResult) (structure.M
 	return structure.MySQL57ColumnStructure{
 		Field:         structure.ColumnField(column.ColumnName),
 		Type:          TrimUnsigned(column.ColumnType),
-		Default:       column.ColumnDefault,
+		Default:       column.ColumnDefault.String,
 		Comment:       column.ColumnComment,
 		CollationName: column.CollationName.String,
 		Attributes:    attributes,

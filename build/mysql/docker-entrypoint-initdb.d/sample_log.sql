@@ -1,10 +1,12 @@
 CREATE TABLE `sample_log` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `month` tinyint(2) unsigned NOT NULL,
+  `sample_id` bigint(20) unsigned NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`,`month`)
+  PRIMARY KEY (`id`,`month`),
+  KEY `sample_id` (`sample_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 /*!50100 PARTITION BY LIST (month)
 (PARTITION p1 VALUES IN (1) ENGINE = InnoDB,

@@ -12,7 +12,7 @@ type ColumnField string
 type MySQL57ColumnStructure struct {
 	Field                ColumnField
 	Type                 string
-	Default              interface{}
+	Default              string
 	Comment              string
 	Attributes           []Attribute
 	CollationName        string
@@ -65,11 +65,12 @@ func (mc *MySQL57ColumnStructure) GenerateDropQuery() string {
 
 // DefaultNecessaryQuot return creqte query
 func (mc *MySQL57ColumnStructure) DefaultNecessaryQuot() string {
-	num, ok := mc.Default.(int)
-	if ok {
-		return strconv.Itoa(num)
+	_, err := strconv.Atoi(mc.Default)
+	if err == nil {
+		return mc.Default
 	}
-	t := mc.Default.(string)
+
+	t := mc.Default
 	if mc.IsForceNull() && t == "CURRENT_TIMESTAMP" {
 		return t
 	}

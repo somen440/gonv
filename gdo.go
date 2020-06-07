@@ -394,3 +394,21 @@ func (gdo *GDO) ShowIndex(tableName string) ([]ShowIndexResult, error) {
 
 	return results, nil
 }
+
+// CreateDatabase create db
+func (gdo *GDO) CreateDatabase(dbName string) error {
+	_, err := gdo.db.Exec("create database " + dbName)
+	return err
+}
+
+// DropDatabaseIfExists delete db
+func (gdo *GDO) DropDatabaseIfExists(dbName string) error {
+	_, err := gdo.db.Exec("drop database if exists " + dbName)
+	return err
+}
+
+// ExecSchema schema query exzec
+func (gdo *GDO) ExecSchema(schema string) error {
+	_, err := gdo.db.Exec(schema)
+	return err
+}

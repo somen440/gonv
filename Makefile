@@ -30,11 +30,11 @@ logs-db:
 
 .PHONY: reflect
 reflect:
-	go run . reflect -u root -p test -P 33066 -o build/mysql/docker-entrypoint-initdb.d test
+	go run . reflect -u root -p test -P 33066 -o build/mysql/schema test
 
 .PHONY: diff
 diff:
-	go run . diff -u root -p test -P 33066 test
+	go run . diff -u root -p test -P 33066 test build/mysql/schema
 
 .PHONY: test
 test:

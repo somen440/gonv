@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -13,11 +16,62 @@ type Factory struct {
 	gdo *GDO
 }
 
-// CreateTableStructure create table structure
-func (f *Factory) CreateTableStructure(dbName, tableName string) (*structure.TableStructure, error) {
+// CreateDatabaseStructureFromSchema create database structure
+func (f *Factory) CreateDatabaseStructureFromSchema(dbName, schema string) (*structure.DatabaseStructure, error) {
+	if f, err := os.Stat(schema); !(!os.IsNotExist(err) && f.IsDir()) {
+		return nil, fmt.Errorf("%s id not dir: %w", schema, err)
+	}
+
+	if err := f.gdo.CreateDatabase(dbName); err != nil {
+		return nil, err
+	}
 	if err := f.gdo.SwitchDb(dbName); err != nil {
 		return nil, fmt.Errorf("SwitchDb error: %w", err)
 	}
+	defer func() {
+		err := f.gdo.DropDatabaseIfExists(dbName)
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	files, err := ioutil.ReadDir(schema)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range files {
+		path := filepath.Join(schema, file.Name())
+		contains, err := ioutil.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		f.gdo.ExecSchema(string(contains))
+	}
+
+	return f.CreateDatabaseStructure(dbName)
+}
+
+// CreateDatabaseStructure create database structure
+func (f *Factory) CreateDatabaseStructure(dbName string) (*structure.DatabaseStructure, error) {
+	if err := f.gdo.SwitchDb(dbName); err != nil {
+		return nil, fmt.Errorf("SwitchDb error: %w", err)
+	}
+
+	result := &structure.DatabaseStructure{
+		Map: map[structure.TableName]*structure.TableStructure{},
+	}
+	for _, table := range f.gdo.ShowTables() {
+		ts, err := f.createTableStructure(dbName, table)
+		if err != nil {
+			return nil, err
+		}
+		result.Add(ts)
+	}
+	return result, nil
+}
+
+func (f *Factory) createTableStructure(dbName, tableName string) (*structure.TableStructure, error) {
 	tableStatus, err := f.gdo.ShowTableStatusLike(tableName)
 	if err != nil {
 		return nil, fmt.Errorf("ShowTableStatusLike error: %w", err)

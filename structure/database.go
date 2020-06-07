@@ -1,14 +1,34 @@
 package structure
 
+import (
+	"bytes"
+)
+
 // TableStructureMap table name structure map
-type TableStructureMap map[TableName]TableStructure
+type TableStructureMap map[TableName]*TableStructure
 
 // TableStructureTypeMap table structure type map
 type TableStructureTypeMap map[TableStructureType]bool
 
 // DatabaseStructure db
 type DatabaseStructure struct {
-	Map map[TableName]TableStructure
+	Map map[TableName]*TableStructure
+}
+
+func (ds *DatabaseStructure) String() string {
+	var out bytes.Buffer
+
+	for table, ts := range ds.Map {
+		out.WriteString("*************************** table: " + string(table) + " ***************************" + "\n")
+		out.WriteString(ts.String() + "\n")
+	}
+
+	return out.String()
+}
+
+// Add add table structure
+func (ds *DatabaseStructure) Add(ts *TableStructure) {
+	ds.Map[TableName(ts.Table)] = ts
 }
 
 // ListToFilter filter table type

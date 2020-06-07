@@ -116,7 +116,7 @@ func generateAction(c *cli.Context) error {
 
 func diffAction(c *cli.Context) error {
 	database := c.Args().Get(0)
-	// schema := c.Args().Get(1)
+	schema := c.Args().Get(1)
 
 	conf := &DBConfig{
 		Driver:   DbDriver(c.String("driver")),
@@ -127,5 +127,5 @@ func diffAction(c *cli.Context) error {
 		Database: database,
 	}
 	diff := NewDiff(conf)
-	return diff.Exec(database)
+	return diff.Exec(database, schema)
 }

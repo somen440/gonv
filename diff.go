@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/gookit/color"
 )
 
 // Diff スキーマと db の diff を取る
@@ -23,20 +25,24 @@ func NewDiff(conf *DBConfig) *Diff {
 }
 
 // Exec 実行
-func (d *Diff) Exec(beforeDbName string) error {
+func (d *Diff) Exec(beforeDbName string, schema string) error {
 	defer d.gdo.Close()
 
-	fmt.Println("create table structures")
+	color.Info.Tips("create before database structures from db")
 	fmt.Println()
-
-	for _, table := range d.gdo.ShowTables() {
-		fmt.Println("*************************** table: " + table + " ***************************")
-		tableSt, err := d.factory.CreateTableStructure(beforeDbName, table)
-		if err != nil {
-			return err
-		}
-		fmt.Println(tableSt.String())
+	before, err := d.factory.CreateDatabaseStructure(beforeDbName)
+	if err != nil {
+		return err
 	}
+	fmt.Println(before.String())
+
+	color.Info.Tips("create after database structures from schema")
+	fmt.Println()
+	after, err := d.factory.CreateDatabaseStructureFromSchema("tmp_"+beforeDbName, schema)
+	if err != nil {
+		return err
+	}
+	fmt.Println(after.String())
 
 	return nil
 }

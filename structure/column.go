@@ -1,6 +1,7 @@
 package structure
 
 import (
+	"bytes"
 	"strconv"
 	"strings"
 )
@@ -20,16 +21,44 @@ type MySQL57ColumnStructure struct {
 	GenerationExpression string
 }
 
+// String return string
+func (mc *MySQL57ColumnStructure) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("\tfield: " + string(mc.Field) + "\n")
+	out.WriteString("\t\ttype: " + string(mc.Type) + "\n")
+	out.WriteString("\t\tdefault: " + string(mc.Default) + "\n")
+	out.WriteString("\t\tcomment: " + string(mc.Comment) + "\n")
+
+	out.WriteString("\t\tattributes:" + "\n")
+	for _, attribute := range mc.Attributes {
+		out.WriteString("\t\t\t- " + string(attribute) + "\n")
+	}
+
+	out.WriteString("\t\tcollation_name: " + string(mc.CollationName) + "\n")
+
+	out.WriteString("\t\tproperties:" + "\n")
+	for _, property := range mc.Properties {
+		out.WriteString("\t\t\t- " + property + "\n")
+	}
+
+	out.WriteString("\t\tgeneration_expression: " + string(mc.GenerationExpression) + "\n")
+
+	out.WriteString("\t\tgenerate: " + mc.GenerateCreateQuery())
+
+	return out.String()
+}
+
 // GenerateCreateQuery return creqte query
 func (mc *MySQL57ColumnStructure) GenerateCreateQuery() string {
-	return string(mc.Field) + " " + mc.GenerateBaseQuery()
+	return "`" + string(mc.Field) + "`" + " " + mc.GenerateBaseQuery()
 }
 
 // GenerateBaseQuery return query base
 func (mc *MySQL57ColumnStructure) GenerateBaseQuery() string {
 	query := []string{mc.Type}
 	if mc.IsUnsigned() {
-		query = append(query, mc.Type)
+		query = append(query, "unsigned")
 	}
 	if mc.CollationName != "" {
 		query = append(query, "COLLATE", mc.CollationName)

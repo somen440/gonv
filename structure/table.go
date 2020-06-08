@@ -2,7 +2,6 @@ package structure
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 )
 
@@ -57,7 +56,7 @@ func (ts *TableStructure) String() string {
 
 	out.WriteString("columns:\n")
 	for _, column := range ts.ColumnStructureList {
-		out.WriteString("\t" + column.GenerateCreateQuery() + "\n")
+		out.WriteString(column.String() + "\n")
 	}
 
 	if len(ts.IndexStructureList) > 0 {
@@ -185,10 +184,8 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 			afterField = beforeField
 		}
 		after := targetMap[beforeField]
-		diff, ok := before.Diff(after)
+		_, ok = before.Diff(after)
 		if ok {
-			fmt.Println(before.Comment, after.Comment)
-			fmt.Printf("%v", diff)
 			result[beforeField] = &ModifiedColumnStructureSet{
 				Up: &ModifiedColumnStructure{
 					BeforeField: afterField,

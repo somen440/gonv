@@ -23,6 +23,11 @@ func (t TableStructureType) Is(target TableStructureType) bool {
 	return t == target
 }
 
+// PartitionStructure interface
+type PartitionStructure interface {
+	Query() string
+}
+
 // TableStructure table
 type TableStructure struct {
 	Table               string
@@ -31,8 +36,8 @@ type TableStructure struct {
 	Engine              string
 	DefaultCharset      string
 	Collate             string
-	ColumnStructureList []MySQL57ColumnStructure
-	IndexStructureList  []IndexStructure
+	ColumnStructureList []*MySQL57ColumnStructure
+	IndexStructureList  []*IndexStructure
 	Partition           PartitionStructure
 	Properties          []string
 }
@@ -70,7 +75,7 @@ func (ts *TableStructure) String() string {
 }
 
 // ColumnStructureMap column map
-type ColumnStructureMap map[ColumnField]MySQL57ColumnStructure
+type ColumnStructureMap map[ColumnField]*MySQL57ColumnStructure
 
 // ColumnFieldMap column map
 type ColumnFieldMap map[ColumnField]bool
@@ -83,23 +88,29 @@ func (ts *TableStructure) GetColumnStructureMap() (result ColumnStructureMap) {
 	return
 }
 
+// RenamedField before -> after
+type RenamedField map[ColumnField]ColumnField
+
 // GetOrderColumnStructureMap return order
-func (ts *TableStructure) GetOrderColumnStructureMap(diff, renamed ColumnStructureMap) (result ColumnStructureMap) {
+func (ts *TableStructure) GetOrderColumnStructureMap(diff ColumnFieldMap, renamed RenamedField) (result RenamedField) {
 	for _, structure := range ts.ColumnStructureList {
-		_, ok := diff[structure.Field]
+		before := structure.Field
+
+		_, ok := diff[before]
 		if ok {
 			continue
 		}
-		t, ok := renamed[structure.Field]
+
+		after, ok := renamed[before]
 		if ok {
-			result[structure.Field] = t
+			result[structure.Field] = after
 		}
 	}
 	return
 }
 
 // IndexMap index key structure map
-type IndexMap map[IndexKey]IndexStructure
+type IndexMap map[IndexKey]*IndexStructure
 
 // GetIndexMap return index map
 func (ts *TableStructure) GetIndexMap() (result IndexMap) {
@@ -123,7 +134,7 @@ func (ts *TableStructure) GetDiffColumnList(target *TableStructure) (result Colu
 }
 
 // ModifiedColumnStructureSetMap modified column
-type ModifiedColumnStructureSetMap map[ColumnField]ModifiedColumnStructureSet
+type ModifiedColumnStructureSetMap map[ColumnField]*ModifiedColumnStructureSet
 
 // GenerateModifiedColumnStructureSetMap return a
 func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
@@ -135,12 +146,12 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 		afterField, ok := renamed[beforeField]
 		if ok {
 			after := targetMap[afterField]
-			result[beforeField] = ModifiedColumnStructureSet{
-				Up: ModifiedColumnStructure{
+			result[beforeField] = &ModifiedColumnStructureSet{
+				Up: &ModifiedColumnStructure{
 					BeforeField: beforeField,
 					Column:      after,
 				},
-				Down: ModifiedColumnStructure{
+				Down: &ModifiedColumnStructure{
 					BeforeField: afterField,
 					Column:      before,
 				},
@@ -148,12 +159,12 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 		}
 		after := targetMap[beforeField]
 		if before.IsChanged(after) {
-			result[beforeField] = ModifiedColumnStructureSet{
-				Up: ModifiedColumnStructure{
+			result[beforeField] = &ModifiedColumnStructureSet{
+				Up: &ModifiedColumnStructure{
 					BeforeField: beforeField,
 					Column:      after,
 				},
-				Down: ModifiedColumnStructure{
+				Down: &ModifiedColumnStructure{
 					BeforeField: beforeField,
 					Column:      before,
 				},
@@ -161,4 +172,61 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 		}
 	}
 	return
+}
+
+// GetModifiedColumnList modified column
+func (ts *TableStructure) GetModifiedColumnList(fieldList []ColumnField) []*ModifiedColumnStructure {
+	columns := ts.GetColumnStructureMap()
+	orders := ts.GetOrderColumnStructureMap(ColumnFieldMap{}, RenamedField{})
+	for _, field := range fieldList {
+		modified := ModifiedColumnStructure{
+			BeforeField: field,
+			Column:      columns[field],
+		}
+		order, ok := orders[field]
+		if ok {
+			modified.SetModifiedAfter(string(order))
+		}
+	}
+	return nil
+}
+
+// GetTable implements migrations TableStructure
+func (ts *TableStructure) GetTable() string {
+	return ts.Table
+}
+
+// GetColumnStructureList implements migrations TableStructure
+func (ts *TableStructure) GetColumnStructureList() []*MySQL57ColumnStructure {
+	return ts.ColumnStructureList
+}
+
+// GetIndexStructureList implements migrations TableStructure
+func (ts *TableStructure) GetIndexStructureList() []*IndexStructure {
+	return ts.IndexStructureList
+}
+
+// GetEngine implements migrations TableStructure
+func (ts *TableStructure) GetEngine() string {
+	return ts.Engine
+}
+
+// GetDefaultCharset implements migrations TableStructure
+func (ts *TableStructure) GetDefaultCharset() string {
+	return ts.DefaultCharset
+}
+
+// GetCollate implements migrations TableStructure
+func (ts *TableStructure) GetCollate() string {
+	return ts.Collate
+}
+
+// GetComment implements migrations TableStructure
+func (ts *TableStructure) GetComment() string {
+	return ts.Comment
+}
+
+// GetPartition implements migrations TableStructure
+func (ts *TableStructure) GetPartition() PartitionStructure {
+	return ts.Partition
 }

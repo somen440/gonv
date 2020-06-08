@@ -1,5 +1,7 @@
 package migration
 
+import "github.com/somen440/gonv/structure"
+
 // ColumnStructure column
 type ColumnStructure interface {
 	GenerateCreateQuery() string
@@ -10,7 +12,7 @@ type ColumnStructure interface {
 // ModifiedColumnStructure modified
 type ModifiedColumnStructure interface {
 	GenerateAddQuery() string
-	GetColumn() ColumnStructure
+	GetColumn() *structure.MySQL57ColumnStructure
 }
 
 // IndexStructure index
@@ -20,26 +22,21 @@ type IndexStructure interface {
 	GenerateDropQuery() string
 }
 
-// PartitionStructure partition
-type PartitionStructure interface {
-	Query() string
-}
-
 // TableStructure table
 type TableStructure interface {
 	GetTable() string
-	GetColumnStructureList() []ColumnStructure
-	GetIndexStructureList() []IndexStructure
+	GetColumnStructureList() []*structure.MySQL57ColumnStructure
+	GetIndexStructureList() []*structure.IndexStructure
 	GetEngine() string
 	GetDefaultCharset() string
 	GetCollate() string
 	GetComment() string
-	GetPartition() PartitionStructure
+	GetPartition() structure.PartitionStructure
 }
 
 // ViewStructure view
 type ViewStructure interface {
 	GetName() string
-	GetCompareQuery() string
-	GetCreateQuery() string
+	CompareQuery() string
+	CreateQueryToFormat() string
 }

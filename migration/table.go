@@ -5,18 +5,6 @@ import (
 	"strings"
 )
 
-type tableMigration struct {
-	Table string
-	Type  Type
-	Up    string
-	Down  string
-}
-
-type Line interface {
-	Up() []string
-	Down() []string
-}
-
 // LineList list
 type LineList struct {
 	list []Line
@@ -174,13 +162,13 @@ func NewViewAlterMigration(before, after ViewStructure, allRenamedNameList [][]s
 	migration := &ViewAlterMigration{}
 	migration.Table = after.GetName()
 	migration.Type = CreateOrReplaceType
-	migration.IsAltered = before.GetCompareQuery() != after.GetCompareQuery()
+	migration.IsAltered = before.CompareQuery() != after.CompareQuery()
 	if !migration.IsAltered {
 		return migration
 	}
 
-	migration.Up = strings.Replace(after.GetCompareQuery(), "CREATE", "CREATE OR REPLACE", 0)
-	migration.Down = strings.Replace(before.GetCompareQuery(), "CREATE", "CREATE OR REPLACE", 0)
+	migration.Up = strings.Replace(after.CompareQuery(), "CREATE", "CREATE OR REPLACE", 0)
+	migration.Down = strings.Replace(before.CompareQuery(), "CREATE", "CREATE OR REPLACE", 0)
 
 	for _, nameList := range allRenamedNameList {
 		count := 0
@@ -209,7 +197,7 @@ func NewViewCreateMigration(view ViewStructure) *ViewCreateMigration {
 	migration := &ViewCreateMigration{}
 	migration.Table = view.GetName()
 	migration.Type = ViewCreateType
-	migration.Up = view.GetCreateQuery()
+	migration.Up = view.CreateQueryToFormat()
 	migration.Down = "DROP VIEW " + view.GetName() + ";"
 	return migration
 }

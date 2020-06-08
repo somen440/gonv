@@ -1,5 +1,7 @@
 package migration
 
+import "github.com/somen440/gonv/structure"
+
 type migrationLine struct {
 	upLineList   []string
 	downLineList []string
@@ -129,7 +131,7 @@ type PartitionRemoveMigration struct {
 }
 
 // NewPartitionRemoveMigration create PartitionRemoveMigration
-func NewPartitionRemoveMigration(before PartitionStructure) *PartitionRemoveMigration {
+func NewPartitionRemoveMigration(before structure.PartitionStructure) *PartitionRemoveMigration {
 	p := &PartitionRemoveMigration{}
 	p.Up = "REMOVE PARTITIONING"
 	p.Down = before.Query()
@@ -142,7 +144,7 @@ type PartitionResetMigration struct {
 }
 
 // NewPartitionResetMigration create PartitionResetMigration
-func NewPartitionResetMigration(before, after PartitionStructure) *PartitionResetMigration {
+func NewPartitionResetMigration(before, after structure.PartitionStructure) *PartitionResetMigration {
 	p := &PartitionResetMigration{}
 	p.Up = after.Query()
 	p.Down = before.Query()

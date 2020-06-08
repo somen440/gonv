@@ -36,6 +36,11 @@ func (vs *ViewStructure) CompareQuery() (compareQuery string) {
 	return
 }
 
+// GetName return Name
+func (vs *ViewStructure) GetName() string {
+	return vs.Name
+}
+
 func (vs *ViewStructure) getDefiner() string {
 	return " DEFINER" + strings.Split(vs.CreateQuery, "DEFINER")[1] + "DEFINER"
 }

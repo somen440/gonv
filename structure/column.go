@@ -78,7 +78,7 @@ func (mc *MySQL57ColumnStructure) DefaultNecessaryQuot() string {
 }
 
 // IsChanged is not match return true
-func (mc *MySQL57ColumnStructure) IsChanged(target MySQL57ColumnStructure) bool {
+func (mc *MySQL57ColumnStructure) IsChanged(target *MySQL57ColumnStructure) bool {
 	return !(mc.Type == target.Type &&
 		mc.Comment == target.Comment &&
 		mc.IsNullable() == target.IsNullable() &&
@@ -137,7 +137,7 @@ func (mc *MySQL57ColumnStructure) IsStored() bool {
 // ModifiedColumnStructure modified column
 type ModifiedColumnStructure struct {
 	BeforeField   ColumnField
-	Column        MySQL57ColumnStructure
+	Column        *MySQL57ColumnStructure
 	ModifiedAfter string
 }
 
@@ -180,10 +180,15 @@ func (ms *ModifiedColumnStructure) SetModifiedAfter(modifier string) {
 	}
 }
 
+// GetColumn implements migration ModifiedColumnStructure
+func (ms *ModifiedColumnStructure) GetColumn() *MySQL57ColumnStructure {
+	return ms.Column
+}
+
 // ModifiedColumnStructureSet up down set
 type ModifiedColumnStructureSet struct {
-	Up   ModifiedColumnStructure
-	Down ModifiedColumnStructure
+	Up   *ModifiedColumnStructure
+	Down *ModifiedColumnStructure
 }
 
 // DroppedColumnFielList drop column list

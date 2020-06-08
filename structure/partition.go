@@ -62,11 +62,6 @@ var (
 	}
 )
 
-// PartitionStructure interface
-type PartitionStructure interface {
-	Query() string
-}
-
 // PartitionPartStructure partition part
 type PartitionPartStructure struct {
 	Name     string
@@ -91,6 +86,8 @@ func (ps *PartitionPartStructure) Query() (query string) {
 
 // PartitionLongStructure partition long
 type PartitionLongStructure struct {
+	PartitionStructure
+
 	Type  string
 	Value string
 	Parts []PartitionPartStructure
@@ -107,15 +104,17 @@ func (ps *PartitionLongStructure) Query() (query string) {
 	return
 }
 
-// PartitionShartStructure partition shart
-type PartitionShartStructure struct {
+// PartitionShortStructure partition shart
+type PartitionShortStructure struct {
+	PartitionStructure
+
 	Type  string
 	Value string
 	Num   int
 }
 
 // Query return qury
-func (ps *PartitionShartStructure) Query() (query string) {
+func (ps *PartitionShortStructure) Query() (query string) {
 	query = "PARTITION BY " + ps.Type + "(" + ps.Value + ")\n"
 	query += "PARTITIONS " + strconv.Itoa(ps.Num)
 	return

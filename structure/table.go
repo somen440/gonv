@@ -96,7 +96,9 @@ func (ts *TableStructure) GetColumnStructureMap() ColumnStructureMap {
 type RenamedField map[ColumnField]ColumnField
 
 // GetOrderColumnStructureMap return order
-func (ts *TableStructure) GetOrderColumnStructureMap(diff []ColumnField, renamed RenamedField) (result RenamedField) {
+func (ts *TableStructure) GetOrderColumnStructureMap(diff []ColumnField, renamed RenamedField) RenamedField {
+	result := RenamedField{}
+
 	diffMap := ColumnFieldMap{}
 	for _, field := range diff {
 		diffMap[field] = true
@@ -115,7 +117,8 @@ func (ts *TableStructure) GetOrderColumnStructureMap(diff []ColumnField, renamed
 			result[structure.Field] = after
 		}
 	}
-	return
+
+	return result
 }
 
 // GetOrderColumnStructureMapAsStrings return order
@@ -163,7 +166,7 @@ type ModifiedColumnStructureSetMap map[ColumnField]*ModifiedColumnStructureSet
 func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 	target *TableStructure,
 	renamed RenamedField,
-) ModifiedColumnStructureSetMap {
+) (ModifiedColumnStructureSetMap, error) {
 	result := ModifiedColumnStructureSetMap{}
 
 	targetMap := target.GetColumnStructureMap()
@@ -184,11 +187,12 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 		} else {
 			afterField = beforeField
 		}
-		after := targetMap[beforeField]
+		after, ok := targetMap[afterField]
+		if !ok {
+			return nil, fmt.Errorf("%s field not found. %v", afterField, targetMap)
+		}
 		_, ok = before.Diff(after)
 		if ok {
-			fmt.Println(after.GenerateCreateQuery())
-			fmt.Println(before.GenerateCreateQuery())
 			result[beforeField] = &ModifiedColumnStructureSet{
 				Up: &ModifiedColumnStructure{
 					BeforeField: afterField,
@@ -202,7 +206,7 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 		}
 	}
 
-	return result
+	return result, nil
 }
 
 // GetModifiedColumnList modified column

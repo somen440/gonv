@@ -34,7 +34,7 @@ reflect:
 
 .PHONY: diff
 diff:
-	go run . diff -u root -p test -P 33066 test build/mysql/schema
+	go run . diff -u root -p test -P 33066 test build/mysql/diff_schema
 
 .PHONY: test
 test:

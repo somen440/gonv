@@ -1,8 +1,6 @@
 package migration
 
 import (
-	"fmt"
-
 	"github.com/somen440/gonv/structure"
 )
 
@@ -72,9 +70,7 @@ func NewColumnModifyMigrationLine(list structure.ModifiedColumnStructureSetMap) 
 	for _, set := range list {
 		line.upLineList = append(line.upLineList, set.Up.GenerateChangeQuery())
 		line.downLineList = append(line.downLineList, set.Down.GenerateChangeQuery())
-		fmt.Println(set.Down.GenerateChangeQuery())
 	}
-	fmt.Printf("%v\n", line.downLineList)
 
 	return line
 }

@@ -408,20 +408,20 @@ func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStruct
 	unknowns := after.GetDiffColumnList(before)
 
 	droppedList := []structure.ColumnField{}
-	renamedList := map[structure.ColumnField]structure.ColumnField{}
+	renamedList := structure.RenamedField{}
 
 	count := 0
 	choices := []string{}
-	addedFields := make([]structure.ColumnField, len(unknowns))
+	addedList := make([]structure.ColumnField, len(unknowns))
 	for k := range unknowns {
-		addedFields[count] = k
+		addedList[count] = k
 		choices = append(choices, string(k))
 	}
 
 	// DROP-INDEX → DROP → MODIFY → ADD → ADD-INDEX
 
 	for field := range missiongs {
-		if len(addedFields) == 0 {
+		if len(addedList) == 0 {
 			droppedList = append(droppedList, field)
 			continue
 		}
@@ -437,8 +437,8 @@ func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStruct
 		}
 
 		var renamedName structure.ColumnField
-		if len(addedFields) == 1 {
-			renamedName = addedFields[0]
+		if len(addedList) == 1 {
+			renamedName = addedList[0]
 		} else {
 			fmt.Println("Select a renamed column.")
 			fmt.Printf("%s\n", strings.Join(choices, ", "))
@@ -448,8 +448,8 @@ func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStruct
 		}
 		renamedList[field] = renamedName
 		renamedNameList = append(renamedNameList, string(renamedName))
-		addedFields = func() (results []structure.ColumnField) {
-			for _, addedField := range addedFields {
+		addedList = func() (results []structure.ColumnField) {
+			for _, addedField := range addedList {
 				if addedField == renamedName {
 					continue
 				}
@@ -459,7 +459,18 @@ func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStruct
 		}()
 	}
 
-	// droppedModifiedList := before.
+	droppedModifiedList := before.GetModifiedColumnList(droppedList)
+	addedModifiedList := after.GetModifiedColumnList(addedList)
+
+	modifiedColumnSetList := before.GenerateModifiedColumnStructureSetMap(after, renamedList)
+
+	beforeOrderList := before.GetOrderColumnStructureMap(droppedList, structure.RenamedField{})
+
+	flipRenamedList := structure.RenamedField{}
+	for b, a := range renamedList {
+		flipRenamedList[a] = b
+	}
+	afterOrderList := after.GetOrderColumnStructureMap(addedList, flipRenamedList)
 
 	return nil, nil
 }

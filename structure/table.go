@@ -92,11 +92,16 @@ func (ts *TableStructure) GetColumnStructureMap() (result ColumnStructureMap) {
 type RenamedField map[ColumnField]ColumnField
 
 // GetOrderColumnStructureMap return order
-func (ts *TableStructure) GetOrderColumnStructureMap(diff ColumnFieldMap, renamed RenamedField) (result RenamedField) {
+func (ts *TableStructure) GetOrderColumnStructureMap(diff []ColumnField, renamed RenamedField) (result RenamedField) {
+	diffMap := ColumnFieldMap{}
+	for _, field := range diff {
+		diffMap[field] = true
+	}
+
 	for _, structure := range ts.ColumnStructureList {
 		before := structure.Field
 
-		_, ok := diff[before]
+		_, ok := diffMap[before]
 		if ok {
 			continue
 		}
@@ -175,11 +180,11 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 }
 
 // GetModifiedColumnList modified column
-func (ts *TableStructure) GetModifiedColumnList(fieldList []ColumnField) []*ModifiedColumnStructure {
+func (ts *TableStructure) GetModifiedColumnList(fieldList []ColumnField) (results []*ModifiedColumnStructure) {
 	columns := ts.GetColumnStructureMap()
 	orders := ts.GetOrderColumnStructureMap(ColumnFieldMap{}, RenamedField{})
 	for _, field := range fieldList {
-		modified := ModifiedColumnStructure{
+		modified := &ModifiedColumnStructure{
 			BeforeField: field,
 			Column:      columns[field],
 		}
@@ -187,8 +192,9 @@ func (ts *TableStructure) GetModifiedColumnList(fieldList []ColumnField) []*Modi
 		if ok {
 			modified.SetModifiedAfter(string(order))
 		}
+		results = append(results, modified)
 	}
-	return nil
+	return
 }
 
 // GetTable implements migrations TableStructure

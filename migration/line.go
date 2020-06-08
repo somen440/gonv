@@ -1,6 +1,10 @@
 package migration
 
-import "github.com/somen440/gonv/structure"
+import (
+	"fmt"
+
+	"github.com/somen440/gonv/structure"
+)
 
 type migrationLine struct {
 	Line
@@ -14,7 +18,7 @@ func (line *migrationLine) UpList() []string {
 }
 
 func (line *migrationLine) DownList() []string {
-	return line.upLineList
+	return line.downLineList
 }
 
 // ColumnAddMigrationLine ALTER TABLE ~ ADD ~
@@ -68,7 +72,9 @@ func NewColumnModifyMigrationLine(list structure.ModifiedColumnStructureSetMap) 
 	for _, set := range list {
 		line.upLineList = append(line.upLineList, set.Up.GenerateChangeQuery())
 		line.downLineList = append(line.downLineList, set.Down.GenerateChangeQuery())
+		fmt.Println(set.Down.GenerateChangeQuery())
 	}
+	fmt.Printf("%v\n", line.downLineList)
 
 	return line
 }

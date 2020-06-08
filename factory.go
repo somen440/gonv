@@ -557,6 +557,7 @@ func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStruct
 	}
 	if len(addedModifiedList) > 0 {
 		line = migration.NewColumnAddMigrationLine(addedModifiedList)
+		lineList.Add(line)
 	}
 	// idnex is last
 

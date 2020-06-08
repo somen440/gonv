@@ -2,6 +2,7 @@ package structure
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 )
 
@@ -186,6 +187,8 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 		after := targetMap[beforeField]
 		_, ok = before.Diff(after)
 		if ok {
+			fmt.Println(after.GenerateCreateQuery())
+			fmt.Println(before.GenerateCreateQuery())
 			result[beforeField] = &ModifiedColumnStructureSet{
 				Up: &ModifiedColumnStructure{
 					BeforeField: afterField,

@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestString(t *testing.T) {
-	t1 := &TableStructure{
+func createTableSt() *TableStructure {
+	return &TableStructure{
 		Table:          "sample",
 		Type:           TableType,
 		Comment:        "sample table",
@@ -32,6 +32,10 @@ func TestString(t *testing.T) {
 		IndexStructureList: []*IndexStructure{},
 		Partition:          nil,
 	}
+}
+
+func TestString(t *testing.T) {
+	t1 := createTableSt()
 	actual := t1.String()
 
 	expected := "name: sample\n"
@@ -45,4 +49,24 @@ func TestString(t *testing.T) {
 	expected += "\t`id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Sample ID'\n"
 
 	assert.Equal(t, expected, actual)
+}
+
+func TestGenerateModifiedColumnStructureSetMap(t *testing.T) {
+	t1 := createTableSt()
+	t2 := createTableSt()
+
+	t2.ColumnStructureList[0].Comment = "Sample ID dayo"
+
+	modified, ok := t1.GenerateModifiedColumnStructureSetMap(t2, RenamedField{})[ColumnField("id")]
+	if !ok {
+		assert.Fail(t, "missiong modified.")
+	}
+
+	expectedUp := "CHANGE id id bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Sample ID dayo'"
+	actualUp := modified.Up.GenerateChangeQuery()
+	assert.Equal(t, expectedUp, actualUp)
+
+	expectedDown := "CHANGE id id bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Sample ID'"
+	actualDown := modified.Down.GenerateChangeQuery()
+	assert.Equal(t, expectedDown, actualDown)
 }

@@ -114,6 +114,14 @@ func (ts *TableStructure) GetOrderColumnStructureMap(diff []ColumnField, renamed
 	return
 }
 
+// GetOrderColumnStructureMapAsStrings return order
+func (ts *TableStructure) GetOrderColumnStructureMapAsStrings(diff []ColumnField, renamed RenamedField) (result []string) {
+	for _, v := range ts.GetOrderColumnStructureMap(diff, renamed) {
+		result = append(result, string(v))
+	}
+	return
+}
+
 // IndexMap index key structure map
 type IndexMap map[IndexKey]*IndexStructure
 
@@ -144,7 +152,7 @@ type ModifiedColumnStructureSetMap map[ColumnField]*ModifiedColumnStructureSet
 // GenerateModifiedColumnStructureSetMap return a
 func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 	target *TableStructure,
-	renamed RenamedColumnFielMap,
+	renamed RenamedField,
 ) (result ModifiedColumnStructureSetMap) {
 	targetMap := target.GetColumnStructureMap()
 	for beforeField, before := range ts.GetColumnStructureMap() {
@@ -182,7 +190,7 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 // GetModifiedColumnList modified column
 func (ts *TableStructure) GetModifiedColumnList(fieldList []ColumnField) (results []*ModifiedColumnStructure) {
 	columns := ts.GetColumnStructureMap()
-	orders := ts.GetOrderColumnStructureMap(ColumnFieldMap{}, RenamedField{})
+	orders := ts.GetOrderColumnStructureMap([]ColumnField{}, RenamedField{})
 	for _, field := range fieldList {
 		modified := &ModifiedColumnStructure{
 			BeforeField: field,

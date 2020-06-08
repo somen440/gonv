@@ -32,7 +32,7 @@ func (ll *LineList) IsMigratable() bool {
 func (ll *LineList) Up() string {
 	upLineList := []string{}
 	for _, line := range ll.list {
-		upLineList = append(line.Up())
+		upLineList = append(upLineList, line.UpList()...)
 	}
 	return " " + strings.Join(upLineList, ",\n ")
 }
@@ -41,7 +41,7 @@ func (ll *LineList) Up() string {
 func (ll *LineList) Down() string {
 	downLineList := []string{}
 	for _, line := range ll.list {
-		downLineList = append(line.Up())
+		downLineList = append(downLineList, line.DownList()...)
 	}
 	return " " + strings.Join(downLineList, ",\n ")
 }
@@ -55,8 +55,8 @@ type TableAlterMigration struct {
 }
 
 type PartitionMigration interface {
-	Up() string
-	Down() string
+	UpQuery() string
+	DownQuery() string
 }
 
 // NewTableAlterMigration create TableAlterMigration
@@ -85,8 +85,8 @@ func NewTableAlterMigration(
 	}
 
 	if partitionMigration != nil {
-		migration.Up += "\n" + partitionMigration.Up()
-		migration.Down += "\n" + partitionMigration.Down()
+		migration.Up += "\n" + partitionMigration.UpQuery()
+		migration.Down += "\n" + partitionMigration.DownQuery()
 	}
 
 	migration.Up += ";"

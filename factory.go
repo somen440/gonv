@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/somen440/gonv/migration"
+	"github.com/somen440/gonv/order"
 	"github.com/somen440/gonv/structure"
 )
 
@@ -289,6 +290,7 @@ func (f *Factory) createIndexStructureList(tableName string) ([]*structure.Index
 	return results, nil
 }
 
+// CreateTableMigrationList create table migration
 func (f *Factory) CreateTableMigrationList(before, after *structure.DatabaseStructure) (*migration.List, error) {
 	allRenamedList := []string{}
 
@@ -404,6 +406,9 @@ func (f *Factory) CreateTableMigrationList(before, after *structure.DatabaseStru
 func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStructure) (*migration.TableAlterMigration, error) {
 	renamedNameList := []string{}
 
+	beforeAll := before.GetColumnStructureMap()
+	afterAll := after.GetColumnStructureMap()
+
 	missiongs := before.GetDiffColumnList(after)
 	unknowns := after.GetDiffColumnList(before)
 
@@ -464,13 +469,98 @@ func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStruct
 
 	modifiedColumnSetList := before.GenerateModifiedColumnStructureSetMap(after, renamedList)
 
-	beforeOrderList := before.GetOrderColumnStructureMap(droppedList, structure.RenamedField{})
+	beforeOrderList := before.GetOrderColumnStructureMapAsStrings(droppedList, structure.RenamedField{})
 
 	flipRenamedList := structure.RenamedField{}
 	for b, a := range renamedList {
 		flipRenamedList[a] = b
 	}
-	afterOrderList := after.GetOrderColumnStructureMap(addedList, flipRenamedList)
+	afterOrderList := after.GetOrderColumnStructureMapAsStrings(addedList, flipRenamedList)
 
-	return nil, nil
+	movedFieldOrderList := order.GenerateFieldOrderList(beforeOrderList, afterOrderList)
+	for _, fieldOrder := range movedFieldOrderList {
+		v, ok := renamedList[structure.ColumnField(fieldOrder.NextAfterField)]
+		if ok {
+			fieldOrder.NextAfterField = string(v)
+		}
+	}
+
+	for field, fieldOrder := range movedFieldOrderList {
+		var upModifiedColumn *structure.ModifiedColumnStructure
+		var downModifiedColumn *structure.ModifiedColumnStructure
+
+		beforeField := structure.ColumnField(field)
+
+		set, ok := modifiedColumnSetList[beforeField]
+		if ok {
+			upModifiedColumn = set.Up
+			downModifiedColumn = set.Down
+		} else {
+			upColumn := afterAll[beforeField]
+			downColumn := beforeAll[beforeField]
+			upModifiedColumn = &structure.ModifiedColumnStructure{
+				BeforeField: beforeField,
+				Column:      upColumn,
+			}
+			downModifiedColumn = &structure.ModifiedColumnStructure{
+				BeforeField: beforeField,
+				Column:      downColumn,
+			}
+		}
+
+		upModifiedColumn.SetModifiedAfter(fieldOrder.NextAfterField)
+		downModifiedColumn.SetModifiedAfter(fieldOrder.NextAfterField)
+	}
+
+	// index
+
+	// partition
+	partitionMigration := &migration.PartitionResetMigration{}
+
+	lineList := migration.LineList{}
+
+	var line migration.Line
+	if before.Table != after.Table {
+		line = migration.NewTableRenameMigrationLine(before.Table, after.Table)
+		lineList.Add(line)
+	}
+	if before.Comment != after.Comment {
+		line = migration.NewTableCommentMigrationLine(before.Collate, after.Comment)
+		lineList.Add(line)
+	}
+	if before.Engine != after.Engine {
+		line = migration.NewTableEngineMigrationLine(before.Engine, after.Engine)
+		lineList.Add(line)
+	}
+	if before.DefaultCharset != after.DefaultCharset {
+		line = migration.NewTableDefaultCharsetMigrationLine(before.DefaultCharset, after.DefaultCharset)
+		lineList.Add(line)
+	}
+	if before.Collate != after.Collate {
+		line = migration.NewTableCollateMigrationLine(before.Collate, after.Collate)
+		lineList.Add(line)
+	}
+	// isFirstExist
+	if len(droppedModifiedList) > 0 {
+		line = migration.NewColumnDropMigrationLine(droppedModifiedList)
+		lineList.Add(line)
+	}
+	if len(modifiedColumnSetList) > 0 {
+		line = migration.NewColumnModifyMigrationLine(modifiedColumnSetList)
+		lineList.Add(line)
+	}
+	if len(addedModifiedList) > 0 {
+		line = migration.NewColumnAddMigrationLine(addedModifiedList)
+	}
+	// idnex is last
+
+	alter := migration.NewTableAlterMigration(
+		before.Table,
+		after.Table,
+		lineList,
+		renamedNameList,
+		partitionMigration,
+	)
+
+	return alter, nil
 }

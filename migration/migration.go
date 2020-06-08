@@ -41,8 +41,8 @@ func (m *tableMigration) DownQuery() string {
 
 // Line migration line
 type Line interface {
-	Up() []string
-	Down() []string
+	UpList() []string
+	DownList() []string
 }
 
 // List migration list

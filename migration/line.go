@@ -3,15 +3,17 @@ package migration
 import "github.com/somen440/gonv/structure"
 
 type migrationLine struct {
+	Line
+
 	upLineList   []string
 	downLineList []string
 }
 
-func (line *migrationLine) Up() []string {
+func (line *migrationLine) UpList() []string {
 	return line.upLineList
 }
 
-func (line *migrationLine) Down() []string {
+func (line *migrationLine) DownList() []string {
 	return line.upLineList
 }
 
@@ -21,7 +23,7 @@ type ColumnAddMigrationLine struct {
 }
 
 // NewColumnAddMigrationLine create ColumnAddMigrationLine
-func NewColumnAddMigrationLine(list []ModifiedColumnStructure) *ColumnAddMigrationLine {
+func NewColumnAddMigrationLine(list []*structure.ModifiedColumnStructure) *ColumnAddMigrationLine {
 	line := &ColumnAddMigrationLine{}
 
 	for _, column := range list {
@@ -38,7 +40,7 @@ type ColumnDropMigrationLine struct {
 }
 
 // NewColumnDropMigrationLine create ColumnDropMigrationLine
-func NewColumnDropMigrationLine(columns []ModifiedColumnStructure) *ColumnDropMigrationLine {
+func NewColumnDropMigrationLine(columns []*structure.ModifiedColumnStructure) *ColumnDropMigrationLine {
 	line := &ColumnDropMigrationLine{}
 
 	cam := NewColumnAddMigrationLine(columns)
@@ -60,12 +62,12 @@ type ColumnModifyMigrationLine struct {
 }
 
 // NewColumnModifyMigrationLine create ColumnModifyMigrationLine
-func NewColumnModifyMigrationLine(list []ModifiedColumnStructureSet) *ColumnModifyMigrationLine {
+func NewColumnModifyMigrationLine(list structure.ModifiedColumnStructureSetMap) *ColumnModifyMigrationLine {
 	line := &ColumnModifyMigrationLine{}
 
 	for _, set := range list {
-		line.upLineList = append(line.upLineList, set.UpColumn().GenerateAddQuery())
-		line.downLineList = append(line.downLineList, set.DownColumn().GenerateAddQuery())
+		line.upLineList = append(line.upLineList, set.Up.GenerateAddQuery())
+		line.downLineList = append(line.downLineList, set.Down.GenerateAddQuery())
 	}
 
 	return line
@@ -121,8 +123,18 @@ func (line *IndexAllMigrationLine) IsLastExist() bool {
 }
 
 type partitionMigration struct {
+	PartitionMigration
+
 	Up   string
 	Down string
+}
+
+func (pm *partitionMigration) UpQuery() string {
+	return pm.Up
+}
+
+func (pm *partitionMigration) DownQuery() string {
+	return pm.Down
 }
 
 // PartitionRemoveMigration REMOVE PARTITIONING
@@ -201,4 +213,17 @@ func NewTableEngineMigrationLine(before, after string) *TableEngineMigrationLine
 	line.upLineList = append(line.upLineList, "ENGINE "+after)
 	line.downLineList = append(line.downLineList, "ENGINE "+before)
 	return line
+}
+
+// TableRenameMigrationLine ALTER TABLE ~ RENAME TO ~
+type TableRenameMigrationLine struct {
+	migrationLine
+}
+
+// NewTableRenameMigrationLine create TableRenameMigrationLine
+func NewTableRenameMigrationLine(before, after string) *TableRenameMigrationLine {
+	migration := &TableRenameMigrationLine{}
+	migration.upLineList = append(migration.upLineList, "RENAME TO `"+after+"`")
+	migration.downLineList = append(migration.downLineList, "RENAME TO `"+before+"`")
+	return migration
 }

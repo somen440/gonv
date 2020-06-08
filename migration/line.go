@@ -66,8 +66,8 @@ func NewColumnModifyMigrationLine(list structure.ModifiedColumnStructureSetMap) 
 	line := &ColumnModifyMigrationLine{}
 
 	for _, set := range list {
-		line.upLineList = append(line.upLineList, set.Up.GenerateAddQuery())
-		line.downLineList = append(line.downLineList, set.Down.GenerateAddQuery())
+		line.upLineList = append(line.upLineList, set.Up.GenerateChangeQuery())
+		line.downLineList = append(line.downLineList, set.Down.GenerateChangeQuery())
 	}
 
 	return line
@@ -184,8 +184,8 @@ type TableCommentMigrationLine struct {
 // NewTableCommentMigrationLine create TableCommentMigrationLine
 func NewTableCommentMigrationLine(before, after string) *TableCommentMigrationLine {
 	line := &TableCommentMigrationLine{}
-	line.upLineList = append(line.upLineList, "COMMENT "+after)
-	line.downLineList = append(line.downLineList, "COMMENT "+before)
+	line.upLineList = append(line.upLineList, "COMMENT '"+after+"'")
+	line.downLineList = append(line.downLineList, "COMMENT '"+before+"'")
 	return line
 }
 

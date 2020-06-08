@@ -54,7 +54,7 @@ func (mc *MySQL57ColumnStructure) GenerateBaseQuery() string {
 			query = append(query, "DEFAULT NULL")
 		}
 	}
-	query = append(query, "COMMENT", mc.Comment)
+	query = append(query, "COMMENT", "'"+mc.Comment+"'")
 	return strings.Join(query, " ")
 }
 
@@ -77,16 +77,36 @@ func (mc *MySQL57ColumnStructure) DefaultNecessaryQuot() string {
 	return "'" + t + "'"
 }
 
-// IsChanged is not match return true
-func (mc *MySQL57ColumnStructure) IsChanged(target *MySQL57ColumnStructure) bool {
-	return !(mc.Type == target.Type &&
-		mc.Comment == target.Comment &&
-		mc.IsNullable() == target.IsNullable() &&
-		mc.IsUnsigned() == target.IsUnsigned() &&
-		mc.Default == target.Default &&
-		mc.IsAutoIncrement() == target.IsAutoIncrement() &&
-		mc.CollationName == target.CollationName &&
-		mc.IsStored() == target.IsStored())
+// Diff is not match return true
+func (mc *MySQL57ColumnStructure) Diff(target *MySQL57ColumnStructure) ([]string, bool) {
+	results := []string{}
+
+	if mc.Type != target.Type {
+		results = append(results, "Type")
+	}
+	if mc.Comment != target.Comment {
+		results = append(results, "Comment")
+	}
+	if mc.IsNullable() != target.IsNullable() {
+		results = append(results, "IsNullable")
+	}
+	if mc.IsUnsigned() != target.IsUnsigned() {
+		results = append(results, "IsUnsigned")
+	}
+	if mc.Default != target.Default {
+		results = append(results, "Default")
+	}
+	if mc.IsAutoIncrement() != target.IsAutoIncrement() {
+		results = append(results, "IsAutoIncrement")
+	}
+	if mc.CollationName != target.CollationName {
+		results = append(results, "CollationName")
+	}
+	if mc.IsStored() != target.IsStored() {
+		results = append(results, "IsStored")
+	}
+
+	return results, len(results) > 0
 }
 
 // IsUnsigned has unsigned true

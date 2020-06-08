@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -98,6 +99,7 @@ func (f *Factory) createTableStructure(dbName, tableName string) (*structure.Tab
 
 	return &structure.TableStructure{
 		Table:               tableName,
+		Type:                structure.TableType,
 		Comment:             tableStatus.Comment,
 		Engine:              tableStatus.Engine,
 		Collate:             tableStatus.Collation,
@@ -292,6 +294,12 @@ func (f *Factory) createIndexStructureList(tableName string) ([]*structure.Index
 
 // CreateTableMigrationList create table migration
 func (f *Factory) CreateTableMigrationList(before, after *structure.DatabaseStructure) (*migration.List, error) {
+	results := &migration.List{}
+
+	if reflect.DeepEqual(before, after) {
+		return results, nil
+	}
+
 	allRenamedList := []string{}
 
 	beforeAll := before.ListToFilterTableType()
@@ -350,13 +358,12 @@ func (f *Factory) CreateTableMigrationList(before, after *structure.DatabaseStru
 	}
 
 	// DROP → MODIFY → ADD
-	results := &migration.List{}
+	var mig migration.Migration
 
 	// table drop
 	for _, table := range droppedList {
-		results.Add(
-			migration.NewTableDropMigration(beforeAll[table]),
-		)
+		mig = migration.NewTableDropMigration(beforeAll[table])
+		results.Add(mig)
 	}
 
 	// table alter
@@ -394,9 +401,8 @@ func (f *Factory) CreateTableMigrationList(before, after *structure.DatabaseStru
 
 	// table create
 	for _, table := range addedTables {
-		results.Add(
-			migration.NewTableCreateMigration(afterAll[table]),
-		)
+		mig = migration.NewTableCreateMigration(afterAll[table])
+		results.Add(mig)
 	}
 
 	return results, nil
@@ -515,7 +521,7 @@ func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStruct
 	// index
 
 	// partition
-	partitionMigration := &migration.PartitionResetMigration{}
+	// partitionMigration := &migration.PartitionResetMigration{}
 
 	lineList := migration.LineList{}
 
@@ -525,7 +531,7 @@ func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStruct
 		lineList.Add(line)
 	}
 	if before.Comment != after.Comment {
-		line = migration.NewTableCommentMigrationLine(before.Collate, after.Comment)
+		line = migration.NewTableCommentMigrationLine(before.Comment, after.Comment)
 		lineList.Add(line)
 	}
 	if before.Engine != after.Engine {
@@ -559,7 +565,7 @@ func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStruct
 		after.Table,
 		lineList,
 		renamedNameList,
-		partitionMigration,
+		nil,
 	)
 
 	return alter, nil

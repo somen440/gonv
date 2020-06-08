@@ -1,6 +1,8 @@
 package migration
 
-import "bytes"
+import (
+	"bytes"
+)
 
 // Type t
 type Type int

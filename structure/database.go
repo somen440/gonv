@@ -32,14 +32,17 @@ func (ds *DatabaseStructure) Add(ts *TableStructure) {
 }
 
 // ListToFilter filter table type
-func (ds *DatabaseStructure) ListToFilter(filters TableStructureTypeMap) (m TableStructureMap) {
+func (ds *DatabaseStructure) ListToFilter(filters TableStructureTypeMap) TableStructureMap {
+	m := TableStructureMap{}
+
 	for table, structure := range ds.Map {
 		_, ok := filters[structure.Type]
 		if ok {
 			m[table] = structure
 		}
 	}
-	return
+
+	return m
 }
 
 // ListToFilterTableType return table type structure
@@ -59,7 +62,9 @@ func (ds *DatabaseStructure) ListToFilterViewType() TableStructureMap {
 }
 
 // DiffListToFilterTableType return diff list filter table
-func (ds *DatabaseStructure) DiffListToFilterTableType(target *DatabaseStructure) (m TableStructureMap) {
+func (ds *DatabaseStructure) DiffListToFilterTableType(target *DatabaseStructure) TableStructureMap {
+	m := TableStructureMap{}
+
 	before := ds.ListToFilterTableType()
 	after := target.ListToFilterTableType()
 
@@ -69,11 +74,14 @@ func (ds *DatabaseStructure) DiffListToFilterTableType(target *DatabaseStructure
 			m[table] = structure
 		}
 	}
-	return
+
+	return m
 }
 
 // DiffListToFilterView return diff list filter view
-func (ds *DatabaseStructure) DiffListToFilterView(target *DatabaseStructure) (m TableStructureMap) {
+func (ds *DatabaseStructure) DiffListToFilterView(target *DatabaseStructure) TableStructureMap {
+	m := TableStructureMap{}
+
 	filter := TableStructureTypeMap{
 		ViewType:    true,
 		ViewRawType: true,
@@ -87,5 +95,6 @@ func (ds *DatabaseStructure) DiffListToFilterView(target *DatabaseStructure) (m 
 			m[table] = structure
 		}
 	}
-	return
+
+	return m
 }

@@ -46,6 +46,7 @@ func TestTrimUnsigned(t *testing.T) {
 	}{
 		{"bigint(20) unsigned", "bigint(20)"},
 		{"varchar(255)", "varchar(255)"},
+		{"datetime", "datetime"},
 	}
 	for _, tt := range tests {
 		actual := TrimUnsigned(tt.target)

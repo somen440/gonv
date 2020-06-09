@@ -21,7 +21,7 @@ func SearchDefaultCharaset(target string) (result string) {
 
 // TrimUnsigned trim <type> unsigned
 func TrimUnsigned(target string) (result string) {
-	return strings.Trim(target, " unsigned")
+	return strings.Replace(target, " unsigned", "", -1)
 }
 
 // ContainsAutoIncrement contains auto_increment

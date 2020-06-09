@@ -1,6 +1,7 @@
 package structure
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -90,7 +91,20 @@ type PartitionLongStructure struct {
 
 	Type  string
 	Value string
-	Parts []PartitionPartStructure
+	Parts []*PartitionPartStructure
+}
+
+func (ps *PartitionLongStructure) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("type: " + ps.Type + "\n")
+	out.WriteString("value: " + ps.Value + "\n")
+	out.WriteString("parts:\n")
+	for _, part := range ps.Parts {
+		out.WriteString(part.Query())
+	}
+
+	return out.String()
 }
 
 // Query return query

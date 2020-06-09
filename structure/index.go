@@ -42,7 +42,7 @@ func (is *IndexStructure) GenerateCreateQuery() (query string) {
 			query += strings.ToUpper(is.IndexType) + " "
 		}
 		query += "KEY "
-		query += string(is.Key) + " "
+		query += "`" + string(is.Key) + "` "
 	}
 	query += is.GenerateIndexText()
 	return
@@ -61,7 +61,7 @@ func (is *IndexStructure) GenerateAddQuery() (query string) {
 		} else {
 			query += "INDEX "
 		}
-		query += string(is.Key) + " "
+		query += "`" + string(is.Key) + "` "
 	}
 	query += is.GenerateIndexText()
 	return
@@ -72,12 +72,18 @@ func (is *IndexStructure) GenerateDropQuery() string {
 	if is.IsPrimary {
 		return "DROP PRIMARY KEY"
 	}
-	return "DROP INDEX " + string(is.Key)
+	return "DROP INDEX `" + string(is.Key) + "`"
 }
 
 // GenerateIndexText return index text
 func (is *IndexStructure) GenerateIndexText() (text string) {
-	return fmt.Sprintf("(%s)", strings.Join(is.ColumnNameList, ", "))
+	columns := func() (result []string) {
+		for _, name := range is.ColumnNameList {
+			result = append(result, fmt.Sprintf("`%s`", name))
+		}
+		return
+	}()
+	return fmt.Sprintf("(%s)", strings.Join(columns, ", "))
 }
 
 // IsChanged is not match target return true
@@ -85,5 +91,6 @@ func (is *IndexStructure) IsChanged(target *IndexStructure) bool {
 	return !(reflect.DeepEqual(
 		is.ColumnNameList,
 		target.ColumnNameList,
-	))
+	) && is.IsUnique == target.IsUnique &&
+		is.IsBtree == target.IsBtree)
 }

@@ -107,6 +107,7 @@ func (f *Factory) createTableStructure(dbName, tableName string) (*structure.Tab
 		Partition:           partition,
 		ColumnStructureList: columns,
 		IndexStructureList:  indexes,
+		Properties:          []string{},
 	}, nil
 }
 
@@ -174,7 +175,7 @@ func (f *Factory) createPartitionStructure(dbName, tableName string) (structure.
 			break
 		case structure.PartitionTypeLong:
 			for value, rows := range group {
-				parts := []structure.PartitionPartStructure{}
+				parts := []*structure.PartitionPartStructure{}
 				var orders []int
 				for order := range rows {
 					orders = append(orders, int(order))
@@ -183,7 +184,7 @@ func (f *Factory) createPartitionStructure(dbName, tableName string) (structure.
 
 				for _, order := range orders {
 					summary := rows[PartitionOrdinalPosition(order)]
-					parts = append(parts, structure.PartitionPartStructure{
+					parts = append(parts, &structure.PartitionPartStructure{
 						Name:     summary.Name,
 						Operator: structure.PartitionMethodOperatorMap[m],
 						Value:    summary.Description,
@@ -225,7 +226,7 @@ func (f *Factory) createColumnStructureList(dbName, tableName string) ([]*struct
 }
 
 func (f *Factory) createColumnStructure(column SelectColumnsResult) (*structure.MySQL57ColumnStructure, error) {
-	var attributes []structure.Attribute
+	attributes := []structure.Attribute{}
 
 	if strings.Contains(column.Extra, "auto_increment") {
 		attributes = append(attributes, structure.AutoIncrement)
@@ -247,6 +248,7 @@ func (f *Factory) createColumnStructure(column SelectColumnsResult) (*structure.
 		Comment:       column.ColumnComment,
 		CollationName: column.CollationName.String,
 		Attributes:    attributes,
+		Properties:    []string{},
 	}, nil
 }
 
@@ -473,7 +475,10 @@ func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStruct
 	droppedModifiedList := before.GetModifiedColumnList(droppedList)
 	addedModifiedList := after.GetModifiedColumnList(addedList)
 
-	modifiedColumnSetList := before.GenerateModifiedColumnStructureSetMap(after, renamedList)
+	modifiedColumnSetList, err := before.GenerateModifiedColumnStructureSetMap(after, renamedList)
+	if err != nil {
+		return nil, err
+	}
 
 	beforeOrderList := before.GetOrderColumnStructureMapAsStrings(droppedList, structure.RenamedField{})
 

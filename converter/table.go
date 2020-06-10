@@ -15,10 +15,11 @@ func (c *Converter) convertTableAll(
 ) *migration.List {
 	results := &migration.List{}
 
-	drops := c.ConvertTableDropMigration(before, after)
-	modifies := c.convertModifyTableAll(before, after, ask)
-	creates := c.ConvertTableCreateMigration(before, after)
-	results.Merge(drops, modifies, creates)
+	results.Merge(
+		c.ConvertTableDropMigration(before, after),
+		c.convertModifyTableAll(before, after, ask),
+		c.ConvertTableCreateMigration(before, after),
+	)
 
 	return results
 }
@@ -66,9 +67,9 @@ func (c *Converter) convertModifyTable(
 	return migration.NewTableAlterMigration(
 		before.Table,
 		after.Table,
-		migration.LineList{},
-		[]string{},
-		nil,
+		c.convertTableMigrationLineList(before, after, ask),
+		ask.RenamedColumnListAsStrings(),
+		c.ConvertTablePartitionMigration(before, after),
 	)
 }
 

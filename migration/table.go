@@ -46,6 +46,16 @@ func (ll *LineList) Down() string {
 	return " " + strings.Join(downLineList, ",\n ")
 }
 
+// Merge args
+func (ll *LineList) Merge(args ...Line) {
+	for _, line := range args {
+		if line == nil {
+			continue
+		}
+		ll.list = append(ll.list, line)
+	}
+}
+
 // TableAlterMigration ALTER TABLE
 type TableAlterMigration struct {
 	tableMigration
@@ -62,7 +72,7 @@ type PartitionMigration interface {
 // NewTableAlterMigration create TableAlterMigration
 func NewTableAlterMigration(
 	beforeTableName, afterTableName string,
-	lineList LineList, renamedNameList []string,
+	lineList *LineList, renamedNameList []string,
 	partitionMigration PartitionMigration,
 ) *TableAlterMigration {
 	migration := &TableAlterMigration{}

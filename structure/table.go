@@ -95,6 +95,9 @@ func (ts *TableStructure) GetColumnStructureMap() ColumnStructureMap {
 // RenamedField before -> after
 type RenamedField map[ColumnField]ColumnField
 
+// RenamedTableName before -> after
+type RenamedTableName map[TableName]TableName
+
 // GetOrderColumnStructureMap return order
 func (ts *TableStructure) GetOrderColumnStructureMap(diff []ColumnField, renamed RenamedField) RenamedField {
 	result := RenamedField{}

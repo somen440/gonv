@@ -122,7 +122,7 @@ func NewTableCreateMigration(ts TableStructure) *TableCreateMigration {
 	migration.Up += " ENGINE=" + ts.GetEngine()
 	migration.Up += " DEFAULT CHARASET=" + ts.GetDefaultCharset()
 	migration.Up += " COLLATE=" + ts.GetCollate()
-	migration.Up += " COMMENT=" + ts.GetComment()
+	migration.Up += " COMMENT='" + ts.GetComment() + "'"
 
 	if ts.GetPartition() != nil {
 		migration.Up += fmt.Sprintf("\n/*!50100 %s */", ts.GetPartition().Query())

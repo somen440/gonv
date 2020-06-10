@@ -100,7 +100,7 @@ func (mc *MySQL57ColumnStructure) DefaultNecessaryQuot() string {
 	}
 
 	t := mc.Default
-	if mc.IsForceNull() && t == "CURRENT_TIMESTAMP" {
+	if strings.ToUpper(mc.Type) == "DATETIME" && t == "CURRENT_TIMESTAMP" {
 		return t
 	}
 	return "'" + t + "'"
@@ -150,7 +150,7 @@ func (mc *MySQL57ColumnStructure) IsUnsigned() bool {
 
 // IsForceNull return null true
 func (mc *MySQL57ColumnStructure) IsForceNull() bool {
-	return strings.ToUpper(mc.Type) == "TIMESTAMP"
+	return strings.ToUpper(mc.Type) == "DATETIME"
 }
 
 // IsNullable has nullable true

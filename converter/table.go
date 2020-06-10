@@ -5,34 +5,15 @@ import (
 	"github.com/somen440/gonv/structure"
 )
 
-// ConvertTableAll convert table
-//   1. DROP
-//   2. MODIFY
-//   3. ADD
-func (c *Converter) convertTableAll(
-	before, after *structure.DatabaseStructure,
-	ask *TableAsk,
-) *migration.List {
-	results := &migration.List{}
-
-	results.Merge(
-		c.ConvertTableDropMigration(before, after),
-		c.convertModifyTableAll(before, after, ask),
-		c.ConvertTableCreateMigration(before, after),
-	)
-
-	return results
-}
-
-// ConvertTableDropMigration converter
-func (c *Converter) ConvertTableDropMigration(before, after *structure.DatabaseStructure) *migration.List {
+// ToTableDropMigration DatabaseStructure -> TableDropMigration
+func (c *Converter) ToTableDropMigration(before, after *structure.DatabaseStructure) *migration.List {
 	results := &migration.List{}
 
 	return results
 }
 
-// convertModifyTableAll
-func (c *Converter) convertModifyTableAll(
+// ToTableAlterMigrationAll DatabaseStructure -> TableAlterMigration
+func (c *Converter) ToTableAlterMigrationAll(
 	before, after *structure.DatabaseStructure,
 	ask *TableAsk,
 ) *migration.List {
@@ -46,35 +27,35 @@ func (c *Converter) convertModifyTableAll(
 		if !ok {
 			continue
 		}
-		migration := c.convertModifyTable(beforeSt, afterSt, ask)
+		migration := c.toTableAlterMigration(beforeSt, afterSt, ask)
 		results.Add(migration)
 	}
 
 	for beforeTable, afterTable := range ask.RenamedTableList {
 		beforeSt := beforeList[beforeTable]
 		afterSt := afterList[afterTable]
-		migration := c.convertModifyTable(beforeSt, afterSt, ask)
+		migration := c.toTableAlterMigration(beforeSt, afterSt, ask)
 		results.Add(migration)
 	}
 
 	return results
 }
 
-func (c *Converter) convertModifyTable(
+func (c *Converter) toTableAlterMigration(
 	before, after *structure.TableStructure,
 	ask *TableAsk,
 ) *migration.TableAlterMigration {
 	return migration.NewTableAlterMigration(
 		before.Table,
 		after.Table,
-		c.convertTableMigrationLineList(before, after, ask),
+		c.toTableMigrationLineList(before, after, ask),
 		ask.RenamedColumnListAsStrings(),
-		c.ConvertTablePartitionMigration(before, after),
+		c.toTablePartitionMigration(before, after),
 	)
 }
 
-// ConvertTableCreateMigration convert DatabaseStructure -> TableCreateMigration
-func (c *Converter) ConvertTableCreateMigration(before, after *structure.DatabaseStructure) *migration.List {
+// ToTableCreateMigration DatabaseStructure -> TableCreateMigration
+func (c *Converter) ToTableCreateMigration(before, after *structure.DatabaseStructure) *migration.List {
 	results := &migration.List{}
 
 	afterAll := after.ListToFilterTableType()

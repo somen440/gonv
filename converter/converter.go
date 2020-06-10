@@ -23,9 +23,20 @@ func (c *Converter) ConvertAll(
 ) *migration.List {
 	results := &migration.List{}
 
-	tMigration := c.convertTableAll(before, after, ask.Table)
+	// table
+	results.Merge(
+		c.ToTableDropMigration(before, after),
+		c.ToTableAlterMigrationAll(before, after, ask.Table),
+		c.ToTableCreateMigration(before, after),
+	)
 
-	results.Merge(tMigration)
+	// view
+	results.Merge(
+		c.ToViewDropMigration(before, after),
+		c.ToViewAlterMigration(before, after),
+		c.ToViewRenameMigration(before, after, ask.View),
+		c.ToViewCreateMigration(before, after),
+	)
 
 	return results
 }

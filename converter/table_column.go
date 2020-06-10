@@ -5,76 +5,66 @@ import (
 	"github.com/somen440/gonv/structure"
 )
 
-func (c *Converter) convertTableMigrationLineList(
+func (c *Converter) toTableMigrationLineList(
 	before, after *structure.TableStructure,
 	ask *TableAsk,
 ) *migration.LineList {
 	results := migration.NewMigrationLineList()
 
-	indexAll := c.ConvertIndexAllMigrationLine(before, after)
+	indexAll := c.toIndexAllMigrationLine(before, after)
 
 	results.Merge(
-		c.ConvertTableRenameMigrationLine(before, after),
-		c.ConvertTableCommentMigrationLine(before, after),
-		c.ConvertTableEngineMigrationLine(before, after),
-		c.ConvertTableDefaultCharsetMigrationLine(before, after),
-		c.ConvertTableCollateMigrationLine(before, after),
+		c.toTableRenameMigrationLine(before, after),
+		c.toTableCommentMigrationLine(before, after),
+		c.toTableEngineMigrationLine(before, after),
+		c.toTableDefaultCharsetMigrationLine(before, after),
+		c.toTableCollateMigrationLine(before, after),
 		indexAll.First,
-		c.ConvertColumnDropMigrationLine(before, after),
-		c.ConvertColumnModifyMigrationLine(before, after),
-		c.ConverterColumnAddMigrationLine(before, after),
+		c.toColumnDropMigrationLine(before, after),
+		c.toColumnModifyMigrationLine(before, after),
+		c.toColumnAddMigrationLine(before, after),
 		indexAll.Last,
 	)
 
 	return results
 }
 
-// ConvertTableRenameMigrationLine convert
-func (c *Converter) ConvertTableRenameMigrationLine(before, after *structure.TableStructure) *migration.TableRenameMigrationLine {
+func (c *Converter) toTableRenameMigrationLine(before, after *structure.TableStructure) *migration.TableRenameMigrationLine {
 	return nil
 }
 
-// ConvertTableCommentMigrationLine convert
-func (c *Converter) ConvertTableCommentMigrationLine(before, after *structure.TableStructure) *migration.TableCommentMigrationLine {
+func (c *Converter) toTableCommentMigrationLine(before, after *structure.TableStructure) *migration.TableCommentMigrationLine {
 	return nil
 }
 
-// ConvertTableEngineMigrationLine convert
-func (c *Converter) ConvertTableEngineMigrationLine(before, after *structure.TableStructure) *migration.TableEngineMigrationLine {
+func (c *Converter) toTableEngineMigrationLine(before, after *structure.TableStructure) *migration.TableEngineMigrationLine {
 	return nil
 }
 
-// ConvertTableDefaultCharsetMigrationLine convert
-func (c *Converter) ConvertTableDefaultCharsetMigrationLine(before, after *structure.TableStructure) *migration.TableDefaultCharsetMigrationLine {
+func (c *Converter) toTableDefaultCharsetMigrationLine(before, after *structure.TableStructure) *migration.TableDefaultCharsetMigrationLine {
 	return nil
 }
 
-// ConvertTableCollateMigrationLine convert
-func (c *Converter) ConvertTableCollateMigrationLine(before, after *structure.TableStructure) *migration.TableCollateMigrationLine {
+func (c *Converter) toTableCollateMigrationLine(before, after *structure.TableStructure) *migration.TableCollateMigrationLine {
 	return nil
 }
 
-// ConvertIndexAllMigrationLine convert
-func (c *Converter) ConvertIndexAllMigrationLine(before, after *structure.TableStructure) *migration.IndexAllMigrationLine {
+func (c *Converter) toIndexAllMigrationLine(before, after *structure.TableStructure) *migration.IndexAllMigrationLine {
 	return nil
 }
 
-// ConvertColumnDropMigrationLine convert
-func (c *Converter) ConvertColumnDropMigrationLine(before, after *structure.TableStructure) *migration.ColumnDropMigrationLine {
+func (c *Converter) toColumnDropMigrationLine(before, after *structure.TableStructure) *migration.ColumnDropMigrationLine {
 	return nil
 }
 
-// ConvertColumnModifyMigrationLine convert
-func (c *Converter) ConvertColumnModifyMigrationLine(before, after *structure.TableStructure) *migration.ColumnModifyMigrationLine {
+func (c *Converter) toColumnModifyMigrationLine(before, after *structure.TableStructure) *migration.ColumnModifyMigrationLine {
 	return nil
 }
 
-// ConverterColumnAddMigrationLine convert
-func (c *Converter) ConverterColumnAddMigrationLine(before, after *structure.TableStructure) *migration.ColumnAddMigrationLine {
+func (c *Converter) toColumnAddMigrationLine(before, after *structure.TableStructure) *migration.ColumnAddMigrationLine {
 	return nil
 }
 
-// ConvertTablePartitionMigration convert
-func (c *Converter) ConvertTablePartitionMigration(before, after *structure.TableStructure) migration.PartitionMigration {
+func (c *Converter) toTablePartitionMigration(before, after *structure.TableStructure) migration.PartitionMigration {
 	return nil
 }

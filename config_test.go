@@ -7,7 +7,7 @@ import (
 )
 
 func TestDataSourceName(t *testing.T) {
-	expected := "user:pass@tcp(host:port)/db"
+	expected := "user:pass@tcp(host:port)/db?charset=utf8mb4&parseTime=true"
 
 	config := &DBConfig{
 		Driver:   MySQL,

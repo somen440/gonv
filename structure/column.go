@@ -83,7 +83,9 @@ func (mc *MySQL57ColumnStructure) GenerateBaseQuery() string {
 			query = append(query, "DEFAULT NULL")
 		}
 	}
-	query = append(query, "COMMENT", "'"+mc.Comment+"'")
+	if mc.Comment != "" {
+		query = append(query, "COMMENT", "'"+mc.Comment+"'")
+	}
 	return strings.Join(query, " ")
 }
 

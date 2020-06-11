@@ -74,7 +74,7 @@ type PartitionPartStructure struct {
 // Query return query
 func (ps *PartitionPartStructure) Query() (query string) {
 	query = fmt.Sprintf(
-		"PARTITION %s VALUES %s (%s)",
+		"PARTITION %s VALUES %s (%s) ENGINE = InnoDB",
 		ps.Name,
 		strings.ToUpper(ps.Operator),
 		ps.Value,

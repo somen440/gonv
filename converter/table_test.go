@@ -34,12 +34,29 @@ func TestToTableDropMigration(t *testing.T) {
 	actuals := migrationList.List()
 	assert.Len(t, actuals, 1)
 
-	sql := "CREATE TABLE sample_log (\n"
-	sql += " \n"
+	sql := "CREATE TABLE `sample_log` (\n"
+	sql += " `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n"
+	sql += " `month` tinyint(2) unsigned NOT NULL,\n"
+	sql += " `sample_id` bigint(20) unsigned NOT NULL,\n"
+	sql += " `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,\n"
+	sql += " `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+	sql += " `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n"
+	sql += " PRIMARY KEY (`id`, `month`),\n"
+	sql += " KEY `sample_id` (`sample_id`)\n"
 	sql += ") ENGINE=InnoDB DEFAULT CHARASET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='sample log table'\n"
 	sql += "/*!50100 PARTITION BY LIST(month)\n"
-	sql += "(PARTITION p1 VALUES IN (1),\n "
-	sql += "PARTITION p2 VALUES IN (2),\n PARTITION p3 VALUES IN (3),\n PARTITION p4 VALUES IN (4),\n PARTITION p5 VALUES IN (5),\n PARTITION p6 VALUES IN (6),\n PARTITION p7 VALUES IN (7),\n PARTITION p8 VALUES IN (8),\n PARTITION p9 VALUES IN (9),\n PARTITION p10 VALUES IN (10),\n PARTITION p11 VALUES IN (11),\n PARTITION p12 VALUES IN (12)) */"
+	sql += "(PARTITION p1 VALUES IN (1) ENGINE = InnoDB,\n"
+	sql += " PARTITION p2 VALUES IN (2) ENGINE = InnoDB,\n"
+	sql += " PARTITION p3 VALUES IN (3) ENGINE = InnoDB,\n"
+	sql += " PARTITION p4 VALUES IN (4) ENGINE = InnoDB,\n"
+	sql += " PARTITION p5 VALUES IN (5) ENGINE = InnoDB,\n"
+	sql += " PARTITION p6 VALUES IN (6) ENGINE = InnoDB,\n"
+	sql += " PARTITION p7 VALUES IN (7) ENGINE = InnoDB,\n"
+	sql += " PARTITION p8 VALUES IN (8) ENGINE = InnoDB,\n"
+	sql += " PARTITION p9 VALUES IN (9) ENGINE = InnoDB,\n"
+	sql += " PARTITION p10 VALUES IN (10) ENGINE = InnoDB,\n"
+	sql += " PARTITION p11 VALUES IN (11) ENGINE = InnoDB,\n"
+	sql += " PARTITION p12 VALUES IN (12) ENGINE = InnoDB) */"
 	tests := []*expectedMigration{
 		{
 			actuals[0],
@@ -99,7 +116,7 @@ func TestToTableCreateMigration(t *testing.T) {
 
 	migrationList = converter.ToTableCreateMigration(db1, db2)
 
-	sql := "CREATE TABLE sample (\n"
+	sql := "CREATE TABLE `sample` (\n"
 	sql += " `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Sample ID',\n"
 	sql += " `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'sample' COMMENT 'Sample Name',\n"
 	sql += " `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created Time',\n"

@@ -117,7 +117,7 @@ func NewTableCreateMigration(ts TableStructure) *TableCreateMigration {
 	migration.Table = ts.GetTable()
 	migration.Type = CreateType
 
-	migration.Up = "CREATE TABLE " + ts.GetTable() + " (\n"
+	migration.Up = "CREATE TABLE `" + ts.GetTable() + "` (\n"
 
 	bodies := []string{}
 	for _, column := range ts.GetColumnStructureList() {

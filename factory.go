@@ -228,7 +228,7 @@ func (f *Factory) createColumnStructureList(dbName, tableName string) ([]*struct
 func (f *Factory) createColumnStructure(column SelectColumnsResult) (*structure.MySQL57ColumnStructure, error) {
 	attributes := []structure.Attribute{}
 
-	if strings.Contains(column.Extra, "auto_increment") {
+	if strings.Contains(column.Extra, string(structure.AutoIncrement)) {
 		attributes = append(attributes, structure.AutoIncrement)
 	}
 	if column.IsNullable == "YES" {
@@ -239,6 +239,9 @@ func (f *Factory) createColumnStructure(column SelectColumnsResult) (*structure.
 	}
 	if strings.Contains(column.Extra, "STORED") {
 		attributes = append(attributes, structure.Stored)
+	}
+	if strings.Contains(column.Extra, string(structure.OnUpdateCurrentTimestamp)) {
+		attributes = append(attributes, structure.OnUpdateCurrentTimestamp)
 	}
 
 	return &structure.MySQL57ColumnStructure{

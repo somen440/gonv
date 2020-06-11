@@ -13,11 +13,11 @@ type ViewStructure struct {
 func (vs *ViewStructure) CreateQueryToFormat() (query string) {
 	query = vs.CreateQuery
 	definer := vs.getDefiner()
-	query = strings.Replace(query, definer, "", 0)
-	query = strings.Replace(query, "AS select ", "\nAs select\n ", 0)
-	query = strings.Replace(query, ",", ",\n ", 0)
-	query = strings.Replace(query, " from ", " \nfrom\n ", 0)
-	query = strings.Replace(query, " where ", " \nwhere\n ", 0)
+	query = strings.Replace(query, definer, "", -1)
+	query = strings.Replace(query, "AS select ", "\nAs select\n ", -1)
+	query = strings.Replace(query, ",", ",\n ", -1)
+	query = strings.Replace(query, " from ", " \nfrom\n ", -1)
+	query = strings.Replace(query, " where ", " \nwhere\n ", -1)
 	return
 }
 
@@ -29,10 +29,10 @@ func (vs *ViewStructure) Type() TableStructureType {
 // CompareQuery compare query
 func (vs *ViewStructure) CompareQuery() (compareQuery string) {
 	definer := vs.getDefiner()
-	compareQuery = strings.Replace(vs.CreateQuery, definer, "", 0)
-	compareQuery = strings.Replace(compareQuery, "\n", "", 0)
-	compareQuery = strings.Replace(compareQuery, " ", "", 0)
-	compareQuery = strings.Replace(compareQuery, vs.Name, "TABLENAME", 0)
+	compareQuery = strings.Replace(vs.CreateQuery, definer, "", -1)
+	compareQuery = strings.Replace(compareQuery, "\n", "", -1)
+	compareQuery = strings.Replace(compareQuery, " ", "", -1)
+	compareQuery = strings.Replace(compareQuery, vs.Name, "TABLENAME", -1)
 	return
 }
 

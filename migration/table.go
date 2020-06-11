@@ -177,8 +177,8 @@ func NewViewAlterMigration(before, after ViewStructure, allRenamedNameList [][]s
 		return migration
 	}
 
-	migration.Up = strings.Replace(after.CompareQuery(), "CREATE", "CREATE OR REPLACE", 0)
-	migration.Down = strings.Replace(before.CompareQuery(), "CREATE", "CREATE OR REPLACE", 0)
+	migration.Up = strings.Replace(after.CompareQuery(), "CREATE", "CREATE OR REPLACE", -1)
+	migration.Down = strings.Replace(before.CompareQuery(), "CREATE", "CREATE OR REPLACE", -1)
 
 	for _, nameList := range allRenamedNameList {
 		count := 0
@@ -192,7 +192,7 @@ func NewViewAlterMigration(before, after ViewStructure, allRenamedNameList [][]s
 		}
 	}
 
-	migration.Down = strings.Replace(migration.Down, before.GetName(), after.GetName(), 0)
+	migration.Down = strings.Replace(migration.Down, before.GetName(), after.GetName(), -1)
 
 	return migration
 }

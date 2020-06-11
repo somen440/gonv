@@ -57,6 +57,9 @@ func (d *Diff) Exec(beforeDbName string, schema string) error {
 
 	color.Info.Tips("migrations")
 	migrations, err := d.generate(before, after)
+	if err != nil {
+		return err
+	}
 	fmt.Println(migrations.String())
 
 	return nil

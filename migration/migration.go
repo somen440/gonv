@@ -60,9 +60,7 @@ func (l *List) Add(migration Migration) {
 // Merge migrations
 func (l *List) Merge(targetsList ...*List) {
 	for _, targets := range targetsList {
-		for _, migration := range targets.list {
-			l.list = append(l.list, migration)
-		}
+		l.list = append(l.list, targets.list...)
 	}
 }
 

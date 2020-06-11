@@ -49,7 +49,9 @@ func (f *Factory) CreateDatabaseStructureFromSchema(dbName, schema string) (*str
 		if err != nil {
 			return nil, err
 		}
-		f.gdo.ExecSchema(string(contains))
+		if err := f.gdo.ExecSchema(string(contains)); err != nil {
+			return nil, err
+		}
 	}
 
 	return f.CreateDatabaseStructure(dbName)
@@ -172,7 +174,6 @@ func (f *Factory) createPartitionStructure(dbName, tableName string) (structure.
 					Num:   len(raws),
 				}
 			}
-			break
 		case structure.PartitionTypeLong:
 			for value, rows := range group {
 				parts := []*structure.PartitionPartStructure{}
@@ -198,7 +199,6 @@ func (f *Factory) createPartitionStructure(dbName, tableName string) (structure.
 					Parts: parts,
 				}
 			}
-			break
 		}
 	}
 
@@ -377,9 +377,7 @@ func (f *Factory) CreateTableMigrationList(before, after *structure.DatabaseStru
 		if err != nil {
 			return err
 		}
-		for _, name := range alter.RenamedNameList {
-			allRenamedList = append(allRenamedList, name)
-		}
+		allRenamedList = append(allRenamedList, alter.RenamedNameList...)
 		if !alter.IsAltered {
 			return nil
 		}

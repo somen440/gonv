@@ -82,6 +82,9 @@ func (mc *MySQL57ColumnStructure) GenerateBaseQuery() string {
 		} else if mc.IsNullable() {
 			query = append(query, "DEFAULT NULL")
 		}
+		if mc.IsOnUpdateCurrentTimestamp() {
+			query = append(query, "ON UPDATE CURRENT_TIMESTAMP")
+		}
 	}
 	if mc.Comment != "" {
 		query = append(query, "COMMENT", "'"+mc.Comment+"'")
@@ -144,6 +147,16 @@ func (mc *MySQL57ColumnStructure) Diff(target *MySQL57ColumnStructure) ([]string
 func (mc *MySQL57ColumnStructure) IsUnsigned() bool {
 	for _, attribete := range mc.Attributes {
 		if attribete == Unsigned {
+			return true
+		}
+	}
+	return false
+}
+
+// IsOnUpdateCurrentTimestamp has OnUpdateCurrentTimestamp true
+func (mc *MySQL57ColumnStructure) IsOnUpdateCurrentTimestamp() bool {
+	for _, attribete := range mc.Attributes {
+		if attribete == OnUpdateCurrentTimestamp {
 			return true
 		}
 	}

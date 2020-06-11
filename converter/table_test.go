@@ -120,7 +120,7 @@ func TestToTableCreateMigration(t *testing.T) {
 	sql += " `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Sample ID',\n"
 	sql += " `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'sample' COMMENT 'Sample Name',\n"
 	sql += " `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created Time',\n"
-	sql += " `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Modified Time',\n"
+	sql += " `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Modified Time',\n"
 	sql += " PRIMARY KEY (`id`)\n"
 	sql += ") ENGINE=InnoDB DEFAULT CHARASET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='sample table'"
 

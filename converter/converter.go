@@ -6,7 +6,21 @@ import (
 )
 
 // Converter structure -> migration converter
-type Converter struct{}
+type Converter struct {
+	Err error
+}
+
+// NewConverter create Converter
+func NewConverter() *Converter {
+	return &Converter{
+		Err: nil,
+	}
+}
+
+// HasError error not eq nil return true
+func (c *Converter) HasError() bool {
+	return c.Err != nil
+}
 
 // ConvertAll cnvert struct -> migration all
 //   1. DROP
@@ -25,7 +39,7 @@ func (c *Converter) ConvertAll(
 
 	// table
 	results.Merge(
-		c.ToTableDropMigration(before, after),
+		c.ToTableDropMigration(before, after, ask.Table),
 		c.ToTableAlterMigrationAll(before, after, ask.Table),
 		c.ToTableCreateMigration(before, after),
 	)

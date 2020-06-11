@@ -44,13 +44,27 @@ func assertEqualTable(t *testing.T, expected, actual *structure.TableStructure) 
 	assert.Equal(t, expected.Collate, actual.Collate)
 	assert.Equal(t, expected.DefaultCharset, actual.DefaultCharset)
 	assert.Equal(t, expected.Partition, actual.Partition)
-	for i, expectedColumn := range expected.ColumnStructureList {
-		actualColumn := actual.ColumnStructureList[i]
+	assertEqualColumn(t, expected.ColumnStructureList, actual.ColumnStructureList)
+	assertEqualIndex(t, expected.IndexStructureList, actual.IndexStructureList)
+	assert.Equal(t, expected.Properties, actual.Properties)
+}
+
+func assertEqualColumn(t *testing.T, expected, actual []*structure.MySQL57ColumnStructure) {
+	if !assert.Equal(t, len(expected), len(actual)) {
+		return
+	}
+	for i, actualColumn := range actual {
+		expectedColumn := expected[i]
 		assert.Equal(t, expectedColumn, actualColumn)
 	}
-	for i, expectedIndex := range expected.IndexStructureList {
-		actualIndex := actual.IndexStructureList[i]
-		assert.Equal(t, expectedIndex, actualIndex)
+}
+
+func assertEqualIndex(t *testing.T, expected, actual []*structure.IndexStructure) {
+	if !assert.Equal(t, len(expected), len(actual)) {
+		return
 	}
-	assert.Equal(t, expected.Properties, actual.Properties)
+	for i, actualColumn := range actual {
+		expectedColumn := expected[i]
+		assert.Equal(t, expectedColumn, actualColumn)
+	}
 }

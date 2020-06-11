@@ -1,13 +1,44 @@
 package converter
 
 import (
+	"fmt"
+
 	"github.com/somen440/gonv/migration"
 	"github.com/somen440/gonv/structure"
 )
 
 // ToTableDropMigration DatabaseStructure -> TableDropMigration
-func (c *Converter) ToTableDropMigration(before, after *structure.DatabaseStructure) *migration.List {
+func (c *Converter) ToTableDropMigration(
+	before, after *structure.DatabaseStructure,
+	ask *TableAsk,
+) *migration.List {
+	if c.HasError() {
+		return nil
+	}
+
 	results := &migration.List{}
+
+	if len(ask.DroppedTableList) == 0 {
+		return nil
+	}
+
+	beforeAll := before.ListToFilterTableType()
+	afterAll := after.ListToFilterTableType()
+
+	for _, table := range ask.DroppedTableList {
+		before, ok := beforeAll[table]
+		if !ok {
+			c.Err = fmt.Errorf("ToTableDropMigration not found table %s from %v", table, beforeAll)
+			return nil
+		}
+		_, ok = afterAll[table]
+		if ok {
+			c.Err = fmt.Errorf("ToTableDropMigration found table %s from %v", table, afterAll)
+			return nil
+		}
+		migration := migration.NewTableDropMigration(before)
+		results.Add(migration)
+	}
 
 	return results
 }
@@ -17,6 +48,10 @@ func (c *Converter) ToTableAlterMigrationAll(
 	before, after *structure.DatabaseStructure,
 	ask *TableAsk,
 ) *migration.List {
+	if c.HasError() {
+		return nil
+	}
+
 	results := &migration.List{}
 
 	beforeList := before.ListToFilterTableType()
@@ -56,6 +91,10 @@ func (c *Converter) toTableAlterMigration(
 
 // ToTableCreateMigration DatabaseStructure -> TableCreateMigration
 func (c *Converter) ToTableCreateMigration(before, after *structure.DatabaseStructure) *migration.List {
+	if c.HasError() {
+		return nil
+	}
+
 	results := &migration.List{}
 
 	afterAll := after.ListToFilterTableType()
@@ -66,7 +105,12 @@ func (c *Converter) ToTableCreateMigration(before, after *structure.DatabaseStru
 	}
 
 	for table := range unknowns {
-		migration := migration.NewTableCreateMigration(afterAll[table])
+		after, ok := afterAll[table]
+		if !ok {
+			c.Err = fmt.Errorf("ToTableCreateMigration not found table %s from after %v", table, afterAll)
+			return nil
+		}
+		migration := migration.NewTableCreateMigration(after)
 		results.Add(migration)
 	}
 

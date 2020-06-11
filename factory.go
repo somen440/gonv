@@ -528,7 +528,7 @@ func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStruct
 	// partition
 	// partitionMigration := &migration.PartitionResetMigration{}
 
-	lineList := migration.LineList{}
+	lineList := &migration.LineList{}
 
 	var line migration.Line
 	if before.Table != after.Table {

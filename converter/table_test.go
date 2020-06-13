@@ -118,6 +118,8 @@ func TestToTableAlterMigrationAll(t *testing.T) {
 
 	db2.Map[structure.TableName("m_sample_log")].IndexStructureList[structure.IndexKey("name")] = structure.NewIndexStructure("name", "BTREE", false, []string{"name"}, 1)
 
+	db2.Map[structure.TableName("m_sample_log")].ColumnStructureList[structure.ColumnField("sample_id")].Type = "int(20)"
+
 	delete(db2.Map, structure.TableName("sample_log"))
 	delete(db2.Map[structure.TableName("m_sample_log")].IndexStructureList, structure.IndexKey("PRIMARY"))
 	delete(db2.Map[structure.TableName("m_sample_log")].ColumnStructureList, structure.ColumnField("modified"))
@@ -129,6 +131,7 @@ func TestToTableAlterMigrationAll(t *testing.T) {
 	up += " COMMENT 'm_sample_log',\n"
 	up += " DROP PRIMARY KEY,\n"
 	up += " DROP COLUMN `modified`,\n"
+	up += " CHANGE `sample_id` `sample_id` int(20) unsigned NOT NULL,\n"
 	up += " ADD INDEX `name` (`name`);"
 
 	down := "ALTER TABLE `m_sample_log`\n"
@@ -136,6 +139,7 @@ func TestToTableAlterMigrationAll(t *testing.T) {
 	down += " COMMENT 'sample log table',\n"
 	down += " ADD PRIMARY KEY (`id`, `month`),\n"
 	down += " ADD COLUMN `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n"
+	down += " CHANGE `sample_id` `sample_id` bigint(20) unsigned NOT NULL,\n"
 	down += " DROP INDEX `name`;"
 
 	actuals := migrationList.List()

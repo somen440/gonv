@@ -67,13 +67,13 @@ func TestGenerateModifiedColumnStructureSetMap(t *testing.T) {
 	}{
 		{
 			ColumnField("id"),
-			"CHANGE id id bigint(20) unsigned DEFAULT 10 COMMENT 'Sample ID dayo'",
-			"CHANGE id id bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Sample ID'",
+			"CHANGE `id` `id` bigint(20) unsigned DEFAULT 10 COMMENT 'Sample ID dayo'",
+			"CHANGE `id` `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'Sample ID'",
 		},
 		{
 			ColumnField("name"),
-			"CHANGE fullname fullname text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'sample' COMMENT 'Sample Name'",
-			"CHANGE name name varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Sample Name'",
+			"CHANGE `fullname` `fullname` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'sample' COMMENT 'Sample Name'",
+			"CHANGE `name` `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Sample Name'",
 		},
 	}
 

@@ -218,7 +218,7 @@ func (ms *ModifiedColumnStructure) GenerateAddQuery() (query string) {
 
 // GenerateChangeQuery return change query
 func (ms *ModifiedColumnStructure) GenerateChangeQuery() (query string) {
-	query = "CHANGE " + string(ms.BeforeField) + " " + string(ms.Column.Field) + " "
+	query = "CHANGE `" + string(ms.BeforeField) + "` `" + string(ms.Column.Field) + "` "
 	query += ms.Column.GenerateBaseQuery()
 	if ms.IsOrderChanged() {
 		query += " " + ms.ModifiedAfter

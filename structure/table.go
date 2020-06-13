@@ -2,7 +2,6 @@ package structure
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 )
 
@@ -192,7 +191,8 @@ func (ts *TableStructure) GenerateModifiedColumnStructureSetMap(
 		}
 		after, ok := targetMap[afterField]
 		if !ok {
-			return nil, fmt.Errorf("%s field not found. %v", afterField, targetMap)
+			// dropped な対象の場合, ないことがある
+			continue
 		}
 		_, ok = before.Diff(after)
 		if ok {

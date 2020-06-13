@@ -10,6 +10,10 @@ func (c *Converter) toTableMigrationLineList(
 	before, after *structure.TableStructure,
 	ask *TableAsk,
 ) *migration.LineList {
+	if c.HasError() {
+		return nil
+	}
+
 	results := migration.NewMigrationLineList()
 
 	indexAll := c.toIndexAllMigrationLine(before, after)
@@ -40,7 +44,7 @@ func (c *Converter) toTableMigrationLineList(
 	if line := c.toColumnDropMigrationLine(before, after, ask); line != nil {
 		results.Add(line)
 	}
-	if line := c.toColumnModifyMigrationLine(before, after); line != nil {
+	if line := c.toColumnModifyMigrationLine(before, after, ask); line != nil {
 		results.Add(line)
 	}
 	if line := c.toColumnAddMigrationLine(before, after); line != nil {
@@ -116,6 +120,9 @@ func (c *Converter) toTableCollateMigrationLine(before, after *structure.TableSt
 }
 
 func (c *Converter) toIndexAllMigrationLine(before, after *structure.TableStructure) *migration.IndexAllMigrationLine {
+	if c.HasError() {
+		return nil
+	}
 	droppedList := []migration.IndexStructure{}
 	addedList := []migration.IndexStructure{}
 
@@ -153,6 +160,9 @@ func (c *Converter) toColumnDropMigrationLine(
 	before, after *structure.TableStructure,
 	ask *TableAsk,
 ) *migration.ColumnDropMigrationLine {
+	if c.HasError() {
+		return nil
+	}
 	dropped := ask.DroppedColumnList
 	for _, v := range util.MapDiffKeys(before.ColumnStructureList, after.ColumnStructureList) {
 		dropped = append(dropped, structure.ColumnField(v))
@@ -168,14 +178,55 @@ func (c *Converter) toColumnDropMigrationLine(
 	return migration.NewColumnDropMigrationLine(results)
 }
 
-func (c *Converter) toColumnModifyMigrationLine(before, after *structure.TableStructure) *migration.ColumnModifyMigrationLine {
-	return nil
+func (c *Converter) toColumnModifyMigrationLine(
+	before, after *structure.TableStructure,
+	ask *TableAsk,
+) *migration.ColumnModifyMigrationLine {
+	if c.HasError() {
+		return nil
+	}
+
+	results := []migration.ModifiedColumnStructureSet{}
+
+	mSetList, err := before.GenerateModifiedColumnStructureSetMap(after, ask.RenamedColumnList)
+	if err != nil {
+		c.Err = err
+	}
+	for _, mSet := range mSetList {
+		results = append(results, mSet)
+	}
+
+	// todo: moved
+
+	if len(results) == 0 {
+		return nil
+	}
+
+	return migration.NewColumnModifyMigrationLine(results)
 }
 
-func (c *Converter) toColumnAddMigrationLine(before, after *structure.TableStructure) *migration.ColumnAddMigrationLine {
-	return nil
+func (c *Converter) toColumnAddMigrationLine(
+	before, after *structure.TableStructure,
+) *migration.ColumnAddMigrationLine {
+	if c.HasError() {
+		return nil
+	}
+	added := []structure.ColumnField{}
+	for _, v := range util.MapDiffKeys(after.ColumnStructureList, before.ColumnStructureList) {
+		added = append(added, structure.ColumnField(v))
+	}
+	list := after.GetModifiedColumnList(added)
+	if len(list) == 0 {
+		return nil
+	}
+	results := []migration.ModifiedColumnStructure{}
+	for _, v := range list {
+		results = append(results, v)
+	}
+	return migration.NewColumnAddMigrationLine(results)
 }
 
 func (c *Converter) toTablePartitionMigration(before, after *structure.TableStructure) migration.PartitionMigration {
+	// todo: partition
 	return nil
 }

@@ -38,7 +38,7 @@ type TableStructure struct {
 	DefaultCharset      string
 	Collate             string
 	ColumnStructureList []*MySQL57ColumnStructure
-	IndexStructureList  []*IndexStructure
+	IndexStructureList  map[IndexKey]*IndexStructure
 	Partition           PartitionStructure
 	Properties          []string
 }
@@ -244,7 +244,7 @@ func (ts *TableStructure) GetColumnStructureList() []*MySQL57ColumnStructure {
 }
 
 // GetIndexStructureList implements migrations TableStructure
-func (ts *TableStructure) GetIndexStructureList() []*IndexStructure {
+func (ts *TableStructure) GetIndexStructureList() map[IndexKey]*IndexStructure {
 	return ts.IndexStructureList
 }
 

@@ -110,8 +110,8 @@ func NewIndexIndexDropMigrationLine(list []IndexStructure) *IndexDropMigrationLi
 
 // IndexAllMigrationLine ALTER TABLE ~ KEY ~
 type IndexAllMigrationLine struct {
-	First *IndexAddMigrationLine
-	Last  *IndexDropMigrationLine
+	First *IndexDropMigrationLine
+	Last  *IndexAddMigrationLine
 }
 
 // IsFirstExist exist first return true

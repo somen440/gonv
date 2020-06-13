@@ -63,14 +63,26 @@ func (c *Converter) ToTableAlterMigrationAll(
 			continue
 		}
 		migration := c.toTableAlterMigration(beforeSt, afterSt, ask)
-		results.Add(migration)
+		if migration.IsAltered {
+			results.Add(migration)
+		}
 	}
 
 	for beforeTable, afterTable := range ask.RenamedTableList {
-		beforeSt := beforeList[beforeTable]
-		afterSt := afterList[afterTable]
+		beforeSt, ok := beforeList[beforeTable]
+		if !ok {
+			c.Err = fmt.Errorf("ToTableAlterMigrationAll not found table %s from before %v", beforeTable, beforeList)
+			return nil
+		}
+		afterSt, ok := afterList[afterTable]
+		if !ok {
+			c.Err = fmt.Errorf("ToTableAlterMigrationAll not found table %s from before %v", afterTable, afterList)
+			return nil
+		}
 		migration := c.toTableAlterMigration(beforeSt, afterSt, ask)
-		results.Add(migration)
+		if migration.IsAltered {
+			results.Add(migration)
+		}
 	}
 
 	return results

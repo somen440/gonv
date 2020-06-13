@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/somen440/gonv/structure"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -79,4 +80,34 @@ func TestDeepEqualStruct(t *testing.T) {
 		Name: "a",
 	}
 	assert.True(t, reflect.DeepEqual(a, &b))
+}
+
+func TestMapDiffKey(t *testing.T) {
+	bm := map[structure.IndexKey]*structure.IndexStructure{
+		structure.IndexKey("key1"): structure.NewIndexStructure(
+			structure.IndexKey("key1"),
+			"type",
+			true,
+			[]string{"key1"},
+		),
+		structure.IndexKey("key2"): structure.NewIndexStructure(
+			structure.IndexKey("key2"),
+			"type",
+			true,
+			[]string{"key2"},
+		),
+	}
+	am := map[structure.IndexKey]*structure.IndexStructure{
+		structure.IndexKey("key1"): structure.NewIndexStructure(
+			structure.IndexKey("key1"),
+			"type",
+			true,
+			[]string{"key1"},
+		),
+	}
+
+	expected := []string{"key2"}
+	actual := MapDiffKeys(bm, am)
+
+	assert.Equal(t, expected, actual)
 }

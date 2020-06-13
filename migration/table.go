@@ -86,8 +86,8 @@ func NewTableAlterMigration(
 		return migration
 	}
 
-	migration.Up = "ALTER TABLE " + beforeTableName
-	migration.Down = "ALTER TABLE " + afterTableName
+	migration.Up = "ALTER TABLE `" + beforeTableName + "`"
+	migration.Down = "ALTER TABLE `" + afterTableName + "`"
 
 	if lineList.IsMigratable() {
 		migration.Up += "\n" + lineList.Up()

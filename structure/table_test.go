@@ -39,7 +39,7 @@ func createTableSt() *TableStructure {
 				GenerationExpression: "",
 			},
 		},
-		IndexStructureList: []*IndexStructure{},
+		IndexStructureList: map[IndexKey]*IndexStructure{},
 		Partition:          nil,
 	}
 }

@@ -1,6 +1,9 @@
 package main
 
-import "strings"
+import (
+	"reflect"
+	"strings"
+)
 
 // InSlice haystack slice 中に needle が含まれるか
 func InSlice(needle string, haystack []string) bool {
@@ -27,4 +30,28 @@ func TrimUnsigned(target string) (result string) {
 // ContainsAutoIncrement contains auto_increment
 func ContainsAutoIncrement(target string) bool {
 	return strings.Contains(target, "auto_increment")
+}
+
+// MapDiffKeys Compares the keys from before map against the keys from after map and returns the difference keys
+func MapDiffKeys(b, a interface{}) (rs []string) {
+	bKeys := reflect.ValueOf(b).MapKeys()
+	aKeys := reflect.ValueOf(a).MapKeys()
+
+	for _, bKey := range bKeys {
+		bk := bKey.String()
+
+		isFound := false
+		for _, aKey := range aKeys {
+			if bk == aKey.String() {
+				isFound = true
+				break
+			}
+		}
+
+		if !isFound {
+			rs = append(rs, bk)
+		}
+	}
+
+	return
 }

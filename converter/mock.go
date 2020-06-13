@@ -68,8 +68,8 @@ func CreateMockSampleTableStructure() *structure.TableStructure {
 				GenerationExpression: "",
 			},
 		},
-		IndexStructureList: []*structure.IndexStructure{
-			structure.NewIndexStructure("PRIMARY", "BTREE", true, []string{"id"}),
+		IndexStructureList: map[structure.IndexKey]*structure.IndexStructure{
+			structure.IndexKey("PRIMARY"): structure.NewIndexStructure("PRIMARY", "BTREE", true, []string{"id"}),
 		},
 		Partition:  nil,
 		Properties: []string{},
@@ -156,9 +156,9 @@ func CreateMockSampleLogTableStructure() *structure.TableStructure {
 				GenerationExpression: "",
 			},
 		},
-		IndexStructureList: []*structure.IndexStructure{
-			structure.NewIndexStructure("PRIMARY", "BTREE", true, []string{"id", "month"}),
-			structure.NewIndexStructure("sample_id", "BTREE", false, []string{"sample_id"}),
+		IndexStructureList: map[structure.IndexKey]*structure.IndexStructure{
+			structure.IndexKey("PRIMARY"):   structure.NewIndexStructure("PRIMARY", "BTREE", true, []string{"id", "month"}),
+			structure.IndexKey("sample_id"): structure.NewIndexStructure("sample_id", "BTREE", false, []string{"sample_id"}),
 		},
 		Partition: &structure.PartitionLongStructure{
 			Type:  "LIST",

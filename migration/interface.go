@@ -26,7 +26,7 @@ type IndexStructure interface {
 type TableStructure interface {
 	GetTable() string
 	GetColumnStructureList() []*structure.MySQL57ColumnStructure
-	GetIndexStructureList() []*structure.IndexStructure
+	GetIndexStructureList() map[structure.IndexKey]*structure.IndexStructure
 	GetEngine() string
 	GetDefaultCharset() string
 	GetCollate() string

@@ -59,12 +59,13 @@ func assertEqualColumn(t *testing.T, expected, actual []*structure.MySQL57Column
 	}
 }
 
-func assertEqualIndex(t *testing.T, expected, actual []*structure.IndexStructure) {
+func assertEqualIndex(t *testing.T, expected, actual map[structure.IndexKey]*structure.IndexStructure) {
 	if !assert.Equal(t, len(expected), len(actual)) {
 		return
 	}
-	for i, actualColumn := range actual {
-		expectedColumn := expected[i]
+	for key, actualColumn := range actual {
+		expectedColumn, ok := expected[key]
+		assert.True(t, ok)
 		assert.Equal(t, expectedColumn, actualColumn)
 	}
 }

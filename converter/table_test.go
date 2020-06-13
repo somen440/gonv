@@ -101,17 +101,54 @@ func TestToTableDropMigrationWithFoundTable(t *testing.T) {
 	assert.True(t, strings.Contains(converter.Err.Error(), "ToTableDropMigration found table sample_log "))
 }
 
+func TestToTableAlterMigrationAll(t *testing.T) {
+	converter, _ := setUp()
+
+	db1 := CreateMockDatabaseStructure()
+	db2 := CreateMockDatabaseStructure()
+	ask := &TableAsk{
+		RenamedTableList: map[structure.TableName]structure.TableName{
+			structure.TableName("sample_log"): structure.TableName("m_sample_log"),
+		},
+	}
+
+	db2.Map[structure.TableName("m_sample_log")] = db2.Map[structure.TableName("sample_log")]
+	db2.Map[structure.TableName("m_sample_log")].Table = "m_sample_log"
+	db2.Map[structure.TableName("m_sample_log")].Comment = "m_sample_log"
+	delete(db2.Map, structure.TableName("sample_log"))
+
+	migrationList := converter.ToTableAlterMigrationAll(db1, db2, ask)
+
+	up := "ALTER TABLE `sample_log`\n"
+	up += " RENAME TO `m_sample_log`,\n"
+	up += " COMMENT 'm_sample_log';"
+
+	down := "ALTER TABLE `m_sample_log`\n"
+	down += " RENAME TO `sample_log`,\n"
+	down += " COMMENT 'sample log table';"
+
+	actuals := migrationList.List()
+	assert.Len(t, actuals, 1)
+
+	tests := []*expectedMigration{
+		{
+			actuals[0],
+			up,
+			down,
+		},
+	}
+	assertEqualMigration(t, tests)
+}
+
 func TestToTableCreateMigration(t *testing.T) {
 	converter, _ := setUp()
 
 	db1 := CreateMockDatabaseStructure()
 	db2 := CreateMockDatabaseStructure()
-	migrationList := converter.ToTableCreateMigration(db1, db2)
-	assert.Nil(t, migrationList)
 
 	delete(db1.Map, structure.TableName("sample"))
 
-	migrationList = converter.ToTableCreateMigration(db1, db2)
+	migrationList := converter.ToTableCreateMigration(db1, db2)
 
 	sql := "CREATE TABLE `sample` (\n"
 	sql += " `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Sample ID',\n"

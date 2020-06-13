@@ -255,7 +255,7 @@ func (f *Factory) createColumnStructure(column SelectColumnsResult) (*structure.
 	}, nil
 }
 
-func (f *Factory) createIndexStructureList(tableName string) ([]*structure.IndexStructure, error) {
+func (f *Factory) createIndexStructureList(tableName string) (map[structure.IndexKey]*structure.IndexStructure, error) {
 	indexes, err := f.gdo.ShowIndex(tableName)
 	if err != nil {
 		return nil, err
@@ -266,7 +266,7 @@ func (f *Factory) createIndexStructureList(tableName string) ([]*structure.Index
 		ColumnName string
 		IndexType  string
 	}
-	type IndexSummaryGroup map[string][]IndexSummary
+	type IndexSummaryGroup map[structure.IndexKey][]IndexSummary
 
 	group := IndexSummaryGroup{}
 	for _, index := range indexes {
@@ -274,25 +274,26 @@ func (f *Factory) createIndexStructureList(tableName string) ([]*structure.Index
 		if index.SubPart.Valid {
 			columnName = fmt.Sprintf("%s(%s)", columnName, index.SubPart.String)
 		}
-		group[index.KeyName] = append(group[index.KeyName], IndexSummary{
+		k := structure.IndexKey(index.KeyName)
+		group[k] = append(group[k], IndexSummary{
 			IsUnique:   index.NonUnique == 0,
 			ColumnName: columnName,
 			IndexType:  index.IndexType,
 		})
 	}
 
-	var results []*structure.IndexStructure
+	results := map[structure.IndexKey]*structure.IndexStructure{}
 	for keyName, list := range group {
 		columnNameList := make([]string, len(list))
 		for i, index := range list {
 			columnNameList[i] = index.ColumnName
 		}
-		results = append(results, structure.NewIndexStructure(
+		results[keyName] = structure.NewIndexStructure(
 			keyName,
 			list[0].IndexType,
 			list[0].IsUnique,
 			columnNameList,
-		))
+		)
 	}
 	return results, nil
 }

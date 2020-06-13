@@ -20,7 +20,7 @@ type IndexStructure struct {
 }
 
 // NewIndexStructure return IndexStructure
-func NewIndexStructure(keyName, indexType string, isUnique bool, columnNameList []string) *IndexStructure {
+func NewIndexStructure(keyName IndexKey, indexType string, isUnique bool, columnNameList []string) *IndexStructure {
 	return &IndexStructure{
 		Key:            IndexKey(keyName),
 		IndexType:      indexType,

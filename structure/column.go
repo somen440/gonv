@@ -19,6 +19,7 @@ type MySQL57ColumnStructure struct {
 	CollationName        string
 	Properties           []string
 	GenerationExpression string
+	Order                int
 }
 
 // String return string
@@ -94,7 +95,7 @@ func (mc *MySQL57ColumnStructure) GenerateBaseQuery() string {
 
 // GenerateDropQuery return drop query
 func (mc *MySQL57ColumnStructure) GenerateDropQuery() string {
-	return "DROP COLUMN " + string(mc.Field)
+	return "DROP COLUMN `" + string(mc.Field) + "`"
 }
 
 // DefaultNecessaryQuot return creqte query
@@ -207,7 +208,7 @@ type ModifiedColumnStructure struct {
 
 // GenerateAddQuery return add query
 func (ms *ModifiedColumnStructure) GenerateAddQuery() (query string) {
-	query = "ADD COLUMN " + string(ms.Column.Field)
+	query = "ADD COLUMN `" + string(ms.Column.Field) + "` "
 	query += ms.Column.GenerateBaseQuery()
 	if ms.IsOrderChanged() {
 		query += " " + ms.ModifiedAfter
@@ -253,6 +254,16 @@ func (ms *ModifiedColumnStructure) GetColumn() *MySQL57ColumnStructure {
 type ModifiedColumnStructureSet struct {
 	Up   *ModifiedColumnStructure
 	Down *ModifiedColumnStructure
+}
+
+// UpStructure return up
+func (ms *ModifiedColumnStructureSet) UpStructure() *ModifiedColumnStructure {
+	return ms.Up
+}
+
+// DownStructure return down
+func (ms *ModifiedColumnStructureSet) DownStructure() *ModifiedColumnStructure {
+	return ms.Down
 }
 
 // DroppedColumnFielList drop column list

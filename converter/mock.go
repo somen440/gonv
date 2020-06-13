@@ -21,8 +21,8 @@ func CreateMockSampleTableStructure() *structure.TableStructure {
 		Engine:         "InnoDB",
 		DefaultCharset: "utf8mb4",
 		Collate:        "utf8mb4_unicode_ci",
-		ColumnStructureList: []*structure.MySQL57ColumnStructure{
-			{
+		ColumnStructureList: map[structure.ColumnField]*structure.MySQL57ColumnStructure{
+			structure.ColumnField("id"): {
 				Field:   structure.ColumnField("id"),
 				Type:    "bigint(20)",
 				Default: "",
@@ -34,8 +34,9 @@ func CreateMockSampleTableStructure() *structure.TableStructure {
 				CollationName:        "",
 				Properties:           []string{},
 				GenerationExpression: "",
+				Order:                0,
 			},
-			{
+			structure.ColumnField("name"): {
 				Field:                structure.ColumnField("name"),
 				Type:                 "varchar(255)",
 				Default:              "sample",
@@ -44,8 +45,9 @@ func CreateMockSampleTableStructure() *structure.TableStructure {
 				CollationName:        "utf8mb4_unicode_ci",
 				Properties:           []string{},
 				GenerationExpression: "",
+				Order:                1,
 			},
-			{
+			structure.ColumnField("created"): {
 				Field:                structure.ColumnField("created"),
 				Type:                 "datetime",
 				Default:              "CURRENT_TIMESTAMP",
@@ -54,8 +56,9 @@ func CreateMockSampleTableStructure() *structure.TableStructure {
 				CollationName:        "",
 				Properties:           []string{},
 				GenerationExpression: "",
+				Order:                2,
 			},
-			{
+			structure.ColumnField("modified"): {
 				Field:   structure.ColumnField("modified"),
 				Type:    "datetime",
 				Default: "CURRENT_TIMESTAMP",
@@ -66,10 +69,11 @@ func CreateMockSampleTableStructure() *structure.TableStructure {
 				CollationName:        "",
 				Properties:           []string{},
 				GenerationExpression: "",
+				Order:                3,
 			},
 		},
 		IndexStructureList: map[structure.IndexKey]*structure.IndexStructure{
-			structure.IndexKey("PRIMARY"): structure.NewIndexStructure("PRIMARY", "BTREE", true, []string{"id"}),
+			structure.IndexKey("PRIMARY"): structure.NewIndexStructure("PRIMARY", "BTREE", true, []string{"id"}, 0),
 		},
 		Partition:  nil,
 		Properties: []string{},
@@ -85,8 +89,8 @@ func CreateMockSampleLogTableStructure() *structure.TableStructure {
 		Engine:         "InnoDB",
 		DefaultCharset: "utf8mb4",
 		Collate:        "utf8mb4_unicode_ci",
-		ColumnStructureList: []*structure.MySQL57ColumnStructure{
-			{
+		ColumnStructureList: map[structure.ColumnField]*structure.MySQL57ColumnStructure{
+			structure.ColumnField("id"): {
 				Field:   structure.ColumnField("id"),
 				Type:    "bigint(20)",
 				Default: "",
@@ -98,8 +102,9 @@ func CreateMockSampleLogTableStructure() *structure.TableStructure {
 				CollationName:        "",
 				Properties:           []string{},
 				GenerationExpression: "",
+				Order:                0,
 			},
-			{
+			structure.ColumnField("month"): {
 				Field:   structure.ColumnField("month"),
 				Type:    "tinyint(2)",
 				Default: "",
@@ -110,8 +115,9 @@ func CreateMockSampleLogTableStructure() *structure.TableStructure {
 				CollationName:        "",
 				Properties:           []string{},
 				GenerationExpression: "",
+				Order:                1,
 			},
-			{
+			structure.ColumnField("sample_id"): {
 				Field:   structure.ColumnField("sample_id"),
 				Type:    "bigint(20)",
 				Default: "",
@@ -122,8 +128,9 @@ func CreateMockSampleLogTableStructure() *structure.TableStructure {
 				CollationName:        "",
 				Properties:           []string{},
 				GenerationExpression: "",
+				Order:                2,
 			},
-			{
+			structure.ColumnField("name"): {
 				Field:                structure.ColumnField("name"),
 				Type:                 "varchar(255)",
 				Default:              "",
@@ -132,8 +139,9 @@ func CreateMockSampleLogTableStructure() *structure.TableStructure {
 				CollationName:        "utf8mb4_unicode_ci",
 				Properties:           []string{},
 				GenerationExpression: "",
+				Order:                3,
 			},
-			{
+			structure.ColumnField("created"): {
 				Field:                structure.ColumnField("created"),
 				Type:                 "datetime",
 				Default:              "CURRENT_TIMESTAMP",
@@ -142,8 +150,9 @@ func CreateMockSampleLogTableStructure() *structure.TableStructure {
 				CollationName:        "",
 				Properties:           []string{},
 				GenerationExpression: "",
+				Order:                4,
 			},
-			{
+			structure.ColumnField("modified"): {
 				Field:   structure.ColumnField("modified"),
 				Type:    "datetime",
 				Default: "CURRENT_TIMESTAMP",
@@ -154,11 +163,12 @@ func CreateMockSampleLogTableStructure() *structure.TableStructure {
 				CollationName:        "",
 				Properties:           []string{},
 				GenerationExpression: "",
+				Order:                5,
 			},
 		},
 		IndexStructureList: map[structure.IndexKey]*structure.IndexStructure{
-			structure.IndexKey("PRIMARY"):   structure.NewIndexStructure("PRIMARY", "BTREE", true, []string{"id", "month"}),
-			structure.IndexKey("sample_id"): structure.NewIndexStructure("sample_id", "BTREE", false, []string{"sample_id"}),
+			structure.IndexKey("PRIMARY"):   structure.NewIndexStructure("PRIMARY", "BTREE", true, []string{"id", "month"}, 0),
+			structure.IndexKey("sample_id"): structure.NewIndexStructure("sample_id", "BTREE", false, []string{"sample_id"}, 1),
 		},
 		Partition: &structure.PartitionLongStructure{
 			Type:  "LIST",

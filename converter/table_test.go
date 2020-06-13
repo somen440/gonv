@@ -61,7 +61,7 @@ func TestToTableDropMigration(t *testing.T) {
 	tests := []*expectedMigration{
 		{
 			actuals[0],
-			"DROP TABLE sample_log",
+			"DROP TABLE `sample_log`",
 			sql,
 		},
 	}
@@ -115,17 +115,28 @@ func TestToTableAlterMigrationAll(t *testing.T) {
 	db2.Map[structure.TableName("m_sample_log")] = db2.Map[structure.TableName("sample_log")]
 	db2.Map[structure.TableName("m_sample_log")].Table = "m_sample_log"
 	db2.Map[structure.TableName("m_sample_log")].Comment = "m_sample_log"
+
+	db2.Map[structure.TableName("m_sample_log")].IndexStructureList[structure.IndexKey("name")] = structure.NewIndexStructure("name", "BTREE", false, []string{"name"}, 1)
+
 	delete(db2.Map, structure.TableName("sample_log"))
+	delete(db2.Map[structure.TableName("m_sample_log")].IndexStructureList, structure.IndexKey("PRIMARY"))
+	delete(db2.Map[structure.TableName("m_sample_log")].ColumnStructureList, structure.ColumnField("modified"))
 
 	migrationList := converter.ToTableAlterMigrationAll(db1, db2, ask)
 
 	up := "ALTER TABLE `sample_log`\n"
 	up += " RENAME TO `m_sample_log`,\n"
-	up += " COMMENT 'm_sample_log';"
+	up += " COMMENT 'm_sample_log',\n"
+	up += " DROP PRIMARY KEY,\n"
+	up += " DROP COLUMN `modified`,\n"
+	up += " ADD INDEX `name` (`name`);"
 
 	down := "ALTER TABLE `m_sample_log`\n"
 	down += " RENAME TO `sample_log`,\n"
-	down += " COMMENT 'sample log table';"
+	down += " COMMENT 'sample log table',\n"
+	down += " ADD PRIMARY KEY (`id`, `month`),\n"
+	down += " ADD COLUMN `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n"
+	down += " DROP INDEX `name`;"
 
 	actuals := migrationList.List()
 	assert.Len(t, actuals, 1)
@@ -165,7 +176,7 @@ func TestToTableCreateMigration(t *testing.T) {
 		{
 			actuals[0],
 			sql,
-			"DROP TABLE sample",
+			"DROP TABLE `sample`",
 		},
 	}
 	assertEqualMigration(t, tests)

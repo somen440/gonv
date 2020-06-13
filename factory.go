@@ -5,13 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strings"
 
-	"github.com/somen440/gonv/migration"
-	"github.com/somen440/gonv/order"
 	"github.com/somen440/gonv/structure"
+	"github.com/somen440/gonv/util"
 )
 
 // Factory structure factory
@@ -82,7 +80,7 @@ func (f *Factory) createTableStructure(dbName, tableName string) (*structure.Tab
 		return nil, fmt.Errorf("ShowTableStatusLike error: %w", err)
 	}
 	createTable := f.gdo.ShowCreateTable(tableName)
-	defaultCharaset := SearchDefaultCharaset(createTable.schema)
+	defaultCharaset := util.SearchDefaultCharaset(createTable.schema)
 
 	partition, err := f.createPartitionStructure(dbName, tableName)
 	if err != nil {
@@ -205,27 +203,27 @@ func (f *Factory) createPartitionStructure(dbName, tableName string) (structure.
 	return partition, nil
 }
 
-func (f *Factory) createColumnStructureList(dbName, tableName string) ([]*structure.MySQL57ColumnStructure, error) {
+func (f *Factory) createColumnStructureList(dbName, tableName string) (map[structure.ColumnField]*structure.MySQL57ColumnStructure, error) {
 	columns, count, err := f.gdo.SelectColumns(dbName, tableName)
 	if err != nil {
 		return nil, err
 	}
 
 	resultsIndex := 0
-	results := make([]*structure.MySQL57ColumnStructure, count)
+	results := make(map[structure.ColumnField]*structure.MySQL57ColumnStructure, count)
 	for _, column := range columns {
-		result, err := f.createColumnStructure(column)
+		result, err := f.createColumnStructure(column, resultsIndex)
 		if err != nil {
 			return nil, err
 		}
-		results[resultsIndex] = result
+		results[structure.ColumnField(column.ColumnName)] = result
 		resultsIndex++
 	}
 
 	return results, nil
 }
 
-func (f *Factory) createColumnStructure(column SelectColumnsResult) (*structure.MySQL57ColumnStructure, error) {
+func (f *Factory) createColumnStructure(column SelectColumnsResult, index int) (*structure.MySQL57ColumnStructure, error) {
 	attributes := []structure.Attribute{}
 
 	if strings.Contains(column.Extra, string(structure.AutoIncrement)) {
@@ -246,12 +244,13 @@ func (f *Factory) createColumnStructure(column SelectColumnsResult) (*structure.
 
 	return &structure.MySQL57ColumnStructure{
 		Field:         structure.ColumnField(column.ColumnName),
-		Type:          TrimUnsigned(column.ColumnType),
+		Type:          util.TrimUnsigned(column.ColumnType),
 		Default:       column.ColumnDefault.String,
 		Comment:       column.ColumnComment,
 		CollationName: column.CollationName.String,
 		Attributes:    attributes,
 		Properties:    []string{},
+		Order:         index,
 	}, nil
 }
 
@@ -282,6 +281,7 @@ func (f *Factory) createIndexStructureList(tableName string) (map[structure.Inde
 		})
 	}
 
+	resultsIndex := 0
 	results := map[structure.IndexKey]*structure.IndexStructure{}
 	for keyName, list := range group {
 		columnNameList := make([]string, len(list))
@@ -293,288 +293,9 @@ func (f *Factory) createIndexStructureList(tableName string) (map[structure.Inde
 			list[0].IndexType,
 			list[0].IsUnique,
 			columnNameList,
+			resultsIndex,
 		)
+		resultsIndex++
 	}
 	return results, nil
-}
-
-// CreateTableMigrationList create table migration
-func (f *Factory) CreateTableMigrationList(before, after *structure.DatabaseStructure) (*migration.List, error) {
-	results := &migration.List{}
-
-	if reflect.DeepEqual(before, after) {
-		return results, nil
-	}
-
-	allRenamedList := []string{}
-
-	beforeAll := before.ListToFilterTableType()
-	afterAll := after.ListToFilterTableType()
-
-	missiongs := before.DiffListToFilterTableType(after)
-	unknowns := after.DiffListToFilterTableType(before)
-
-	droppedList := []structure.TableName{}
-
-	// before: after
-	renamedList := map[structure.TableName]structure.TableName{}
-
-	count := 0
-	addedTables := make([]structure.TableName, len(unknowns))
-	for k := range unknowns {
-		addedTables[count] = k
-	}
-
-	for table := range missiongs {
-		if len(addedTables) == 0 {
-			droppedList = append(droppedList, table)
-			continue
-		}
-
-		var answer string
-		fmt.Printf("Table %s is missing. Dropped Table? [yN]\n", table)
-		fmt.Print("> ")
-		fmt.Scan(&answer)
-
-		if answer == "y" {
-			droppedList = append(droppedList, table)
-			continue
-		}
-
-		var renamedName structure.TableName
-		if len(addedTables) == 1 {
-			renamedName = addedTables[0]
-		} else {
-			fmt.Println("Select a renamed table.")
-			fmt.Print("> ")
-			fmt.Scan(&answer)
-			renamedName = structure.TableName(answer)
-		}
-		renamedList[table] = renamedName
-		allRenamedList = append(allRenamedList, string(renamedName))
-		addedTables = func() (results []structure.TableName) {
-			for _, addedTable := range addedTables {
-				if addedTable == renamedName {
-					continue
-				}
-				results = append(results, addedTable)
-			}
-			return
-		}()
-	}
-
-	// DROP → MODIFY → ADD
-	var mig migration.Migration
-
-	// table drop
-	for _, table := range droppedList {
-		mig = migration.NewTableDropMigration(beforeAll[table])
-		results.Add(mig)
-	}
-
-	// table alter
-	addAlter := func(beforeSt, afterSt *structure.TableStructure) error {
-		alter, err := f.CreateTableAlterMigration(beforeSt, afterSt)
-		if err != nil {
-			return err
-		}
-		allRenamedList = append(allRenamedList, alter.RenamedNameList...)
-		if !alter.IsAltered {
-			return nil
-		}
-		results.Add(alter)
-		return nil
-	}
-
-	for beforeTable, beforeSt := range beforeAll {
-		afterSt, ok := afterAll[beforeTable]
-		if !ok {
-			continue
-		}
-		if err := addAlter(beforeSt, afterSt); err != nil {
-			return nil, err
-		}
-	}
-	for _, renamed := range renamedList {
-		beforeSt := beforeAll[renamed]
-		afterSt := afterAll[renamed]
-		if err := addAlter(beforeSt, afterSt); err != nil {
-			return nil, err
-		}
-	}
-
-	// table create
-	for _, table := range addedTables {
-		mig = migration.NewTableCreateMigration(afterAll[table])
-		results.Add(mig)
-	}
-
-	return results, nil
-}
-
-// CreateTableAlterMigration create TableAlterMigration
-func (f *Factory) CreateTableAlterMigration(before, after *structure.TableStructure) (*migration.TableAlterMigration, error) {
-	renamedNameList := []string{}
-
-	beforeAll := before.GetColumnStructureMap()
-	afterAll := after.GetColumnStructureMap()
-
-	missiongs := before.GetDiffColumnList(after)
-	unknowns := after.GetDiffColumnList(before)
-
-	droppedList := []structure.ColumnField{}
-	renamedList := structure.RenamedField{}
-
-	count := 0
-	choices := []string{}
-	addedList := make([]structure.ColumnField, len(unknowns))
-	for k := range unknowns {
-		addedList[count] = k
-		choices = append(choices, string(k))
-	}
-
-	// DROP-INDEX → DROP → MODIFY → ADD → ADD-INDEX
-
-	for field := range missiongs {
-		if len(addedList) == 0 {
-			droppedList = append(droppedList, field)
-			continue
-		}
-
-		var answer string
-		fmt.Printf("Field %s is missing. Dropped Field? (N renmaed) [yN]\n", field)
-		fmt.Print("> ")
-		fmt.Scan(&answer)
-
-		if answer == "y" {
-			droppedList = append(droppedList, field)
-			continue
-		}
-
-		var renamedName structure.ColumnField
-		if len(addedList) == 1 {
-			renamedName = addedList[0]
-		} else {
-			fmt.Println("Select a renamed column.")
-			fmt.Printf("%s\n", strings.Join(choices, ", "))
-			fmt.Print("> ")
-			fmt.Scan(&answer)
-			renamedName = structure.ColumnField(answer)
-		}
-		renamedList[field] = renamedName
-		renamedNameList = append(renamedNameList, string(renamedName))
-		addedList = func() (results []structure.ColumnField) {
-			for _, addedField := range addedList {
-				if addedField == renamedName {
-					continue
-				}
-				results = append(results, addedField)
-			}
-			return
-		}()
-	}
-
-	droppedModifiedList := before.GetModifiedColumnList(droppedList)
-	addedModifiedList := after.GetModifiedColumnList(addedList)
-
-	modifiedColumnSetList, err := before.GenerateModifiedColumnStructureSetMap(after, renamedList)
-	if err != nil {
-		return nil, err
-	}
-
-	beforeOrderList := before.GetOrderColumnStructureMapAsStrings(droppedList, structure.RenamedField{})
-
-	flipRenamedList := structure.RenamedField{}
-	for b, a := range renamedList {
-		flipRenamedList[a] = b
-	}
-	afterOrderList := after.GetOrderColumnStructureMapAsStrings(addedList, flipRenamedList)
-
-	movedFieldOrderList := order.GenerateFieldOrderList(beforeOrderList, afterOrderList)
-	for _, fieldOrder := range movedFieldOrderList {
-		v, ok := renamedList[structure.ColumnField(fieldOrder.NextAfterField)]
-		if ok {
-			fieldOrder.NextAfterField = string(v)
-		}
-	}
-
-	for field, fieldOrder := range movedFieldOrderList {
-		var upModifiedColumn *structure.ModifiedColumnStructure
-		var downModifiedColumn *structure.ModifiedColumnStructure
-
-		beforeField := structure.ColumnField(field)
-
-		set, ok := modifiedColumnSetList[beforeField]
-		if ok {
-			upModifiedColumn = set.Up
-			downModifiedColumn = set.Down
-		} else {
-			upColumn := afterAll[beforeField]
-			downColumn := beforeAll[beforeField]
-			upModifiedColumn = &structure.ModifiedColumnStructure{
-				BeforeField: beforeField,
-				Column:      upColumn,
-			}
-			downModifiedColumn = &structure.ModifiedColumnStructure{
-				BeforeField: beforeField,
-				Column:      downColumn,
-			}
-		}
-
-		upModifiedColumn.SetModifiedAfter(fieldOrder.NextAfterField)
-		downModifiedColumn.SetModifiedAfter(fieldOrder.NextAfterField)
-	}
-
-	// index
-
-	// partition
-	// partitionMigration := &migration.PartitionResetMigration{}
-
-	lineList := &migration.LineList{}
-
-	var line migration.Line
-	if before.Table != after.Table {
-		line = migration.NewTableRenameMigrationLine(before.Table, after.Table)
-		lineList.Add(line)
-	}
-	if before.Comment != after.Comment {
-		line = migration.NewTableCommentMigrationLine(before.Comment, after.Comment)
-		lineList.Add(line)
-	}
-	if before.Engine != after.Engine {
-		line = migration.NewTableEngineMigrationLine(before.Engine, after.Engine)
-		lineList.Add(line)
-	}
-	if before.DefaultCharset != after.DefaultCharset {
-		line = migration.NewTableDefaultCharsetMigrationLine(before.DefaultCharset, after.DefaultCharset)
-		lineList.Add(line)
-	}
-	if before.Collate != after.Collate {
-		line = migration.NewTableCollateMigrationLine(before.Collate, after.Collate)
-		lineList.Add(line)
-	}
-	// isFirstExist
-	if len(droppedModifiedList) > 0 {
-		line = migration.NewColumnDropMigrationLine(droppedModifiedList)
-		lineList.Add(line)
-	}
-	if len(modifiedColumnSetList) > 0 {
-		line = migration.NewColumnModifyMigrationLine(modifiedColumnSetList)
-		lineList.Add(line)
-	}
-	if len(addedModifiedList) > 0 {
-		line = migration.NewColumnAddMigrationLine(addedModifiedList)
-		lineList.Add(line)
-	}
-	// idnex is last
-
-	alter := migration.NewTableAlterMigration(
-		before.Table,
-		after.Table,
-		lineList,
-		renamedNameList,
-		nil,
-	)
-
-	return alter, nil
 }

@@ -1,9 +1,5 @@
 package migration
 
-import (
-	"github.com/somen440/gonv/structure"
-)
-
 type migrationLine struct {
 	Line
 
@@ -25,12 +21,12 @@ type ColumnAddMigrationLine struct {
 }
 
 // NewColumnAddMigrationLine create ColumnAddMigrationLine
-func NewColumnAddMigrationLine(list []*structure.ModifiedColumnStructure) *ColumnAddMigrationLine {
+func NewColumnAddMigrationLine(list []ModifiedColumnStructure) *ColumnAddMigrationLine {
 	line := &ColumnAddMigrationLine{}
 
 	for _, column := range list {
 		line.upLineList = append(line.upLineList, column.GenerateAddQuery())
-		line.downLineList = append(line.downLineList, column.GetColumn().GenerateBaseQuery())
+		line.downLineList = append(line.downLineList, column.GetColumn().GenerateDropQuery())
 	}
 
 	return line
@@ -42,7 +38,7 @@ type ColumnDropMigrationLine struct {
 }
 
 // NewColumnDropMigrationLine create ColumnDropMigrationLine
-func NewColumnDropMigrationLine(columns []*structure.ModifiedColumnStructure) *ColumnDropMigrationLine {
+func NewColumnDropMigrationLine(columns []ModifiedColumnStructure) *ColumnDropMigrationLine {
 	line := &ColumnDropMigrationLine{}
 
 	cam := NewColumnAddMigrationLine(columns)
@@ -52,26 +48,18 @@ func NewColumnDropMigrationLine(columns []*structure.ModifiedColumnStructure) *C
 	return line
 }
 
-// ModifiedColumnStructureSet up down set
-type ModifiedColumnStructureSet interface {
-	UpColumn() ModifiedColumnStructure
-	DownColumn() ModifiedColumnStructure
-}
-
 // ColumnModifyMigrationLine ALTER TABLE ~ MODIFY ~
 type ColumnModifyMigrationLine struct {
 	migrationLine
 }
 
 // NewColumnModifyMigrationLine create ColumnModifyMigrationLine
-func NewColumnModifyMigrationLine(list structure.ModifiedColumnStructureSetMap) *ColumnModifyMigrationLine {
+func NewColumnModifyMigrationLine(list []ModifiedColumnStructureSet) *ColumnModifyMigrationLine {
 	line := &ColumnModifyMigrationLine{}
-
 	for _, set := range list {
-		line.upLineList = append(line.upLineList, set.Up.GenerateChangeQuery())
-		line.downLineList = append(line.downLineList, set.Down.GenerateChangeQuery())
+		line.upLineList = append(line.upLineList, set.UpStructure().GenerateChangeQuery())
+		line.downLineList = append(line.downLineList, set.DownStructure().GenerateChangeQuery())
 	}
-
 	return line
 }
 
@@ -145,7 +133,7 @@ type PartitionRemoveMigration struct {
 }
 
 // NewPartitionRemoveMigration create PartitionRemoveMigration
-func NewPartitionRemoveMigration(before structure.PartitionStructure) *PartitionRemoveMigration {
+func NewPartitionRemoveMigration(before PartitionStructure) *PartitionRemoveMigration {
 	p := &PartitionRemoveMigration{}
 	p.Up = "REMOVE PARTITIONING"
 	p.Down = before.Query()
@@ -158,7 +146,7 @@ type PartitionResetMigration struct {
 }
 
 // NewPartitionResetMigration create PartitionResetMigration
-func NewPartitionResetMigration(before, after structure.PartitionStructure) *PartitionResetMigration {
+func NewPartitionResetMigration(before, after PartitionStructure) *PartitionResetMigration {
 	p := &PartitionResetMigration{}
 	p.Up = after.Query()
 	p.Down = before.Query()

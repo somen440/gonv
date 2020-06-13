@@ -3,6 +3,7 @@ package converter
 import (
 	"github.com/somen440/gonv/migration"
 	"github.com/somen440/gonv/structure"
+	"github.com/somen440/gonv/util"
 )
 
 func (c *Converter) toTableMigrationLineList(
@@ -36,7 +37,7 @@ func (c *Converter) toTableMigrationLineList(
 			results.Add(line)
 		}
 	}
-	if line := c.toColumnDropMigrationLine(before, after); line != nil {
+	if line := c.toColumnDropMigrationLine(before, after, ask); line != nil {
 		results.Add(line)
 	}
 	if line := c.toColumnModifyMigrationLine(before, after); line != nil {
@@ -115,29 +116,56 @@ func (c *Converter) toTableCollateMigrationLine(before, after *structure.TableSt
 }
 
 func (c *Converter) toIndexAllMigrationLine(before, after *structure.TableStructure) *migration.IndexAllMigrationLine {
-	drop := c.toIndexDropMigrationLine(before.IndexStructureList, after.IndexStructureList)
-	add := c.toIndexAddMigrationLine(before.IndexStructureList, after.IndexStructureList)
+	droppedList := []migration.IndexStructure{}
+	addedList := []migration.IndexStructure{}
 
-	if drop == nil && add == nil {
+	biList := before.IndexStructureList
+	aiList := after.IndexStructureList
+
+	for _, key := range util.MapDiffKeys(biList, aiList) {
+		bVal := biList[structure.IndexKey(key)]
+		droppedList = append(droppedList, bVal)
+	}
+
+	for aKey, aVal := range aiList {
+		bVal, ok := biList[aKey]
+		if !ok {
+			addedList = append(addedList, aVal)
+			continue
+		}
+		if aVal.IsChanged(bVal) {
+			droppedList = append(droppedList, bVal)
+			addedList = append(addedList, aVal)
+		}
+	}
+
+	if len(droppedList) == 0 && len(addedList) == 0 {
 		return nil
 	}
 
 	return &migration.IndexAllMigrationLine{
-		First: drop,
-		Last:  add,
+		First: migration.NewIndexIndexDropMigrationLine(droppedList),
+		Last:  migration.NewIndexAddMigrationLine(addedList),
 	}
 }
 
-func (c *Converter) toIndexAddMigrationLine(before, after map[structure.IndexKey]*structure.IndexStructure) *migration.IndexAddMigrationLine {
-	return nil
-}
-
-func (c *Converter) toIndexDropMigrationLine(before, after map[structure.IndexKey]*structure.IndexStructure) *migration.IndexDropMigrationLine {
-	return nil
-}
-
-func (c *Converter) toColumnDropMigrationLine(before, after *structure.TableStructure) *migration.ColumnDropMigrationLine {
-	return nil
+func (c *Converter) toColumnDropMigrationLine(
+	before, after *structure.TableStructure,
+	ask *TableAsk,
+) *migration.ColumnDropMigrationLine {
+	dropped := ask.DroppedColumnList
+	for _, v := range util.MapDiffKeys(before.ColumnStructureList, after.ColumnStructureList) {
+		dropped = append(dropped, structure.ColumnField(v))
+	}
+	list := before.GetModifiedColumnList(dropped)
+	if len(list) == 0 {
+		return nil
+	}
+	results := []migration.ModifiedColumnStructure{}
+	for _, v := range list {
+		results = append(results, v)
+	}
+	return migration.NewColumnDropMigrationLine(results)
 }
 
 func (c *Converter) toColumnModifyMigrationLine(before, after *structure.TableStructure) *migration.ColumnModifyMigrationLine {

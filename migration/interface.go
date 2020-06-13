@@ -15,6 +15,12 @@ type ModifiedColumnStructure interface {
 	GetColumn() *structure.MySQL57ColumnStructure
 }
 
+// ModifiedColumnStructureSet up down set
+type ModifiedColumnStructureSet interface {
+	UpStructure() *structure.ModifiedColumnStructure
+	DownStructure() *structure.ModifiedColumnStructure
+}
+
 // IndexStructure index
 type IndexStructure interface {
 	GenerateCreateQuery() string
@@ -25,7 +31,7 @@ type IndexStructure interface {
 // TableStructure table
 type TableStructure interface {
 	GetTable() string
-	GetColumnStructureList() []*structure.MySQL57ColumnStructure
+	GetColumnStructureList() map[structure.ColumnField]*structure.MySQL57ColumnStructure
 	GetIndexStructureList() map[structure.IndexKey]*structure.IndexStructure
 	GetEngine() string
 	GetDefaultCharset() string
@@ -39,4 +45,9 @@ type ViewStructure interface {
 	GetName() string
 	CompareQuery() string
 	CreateQueryToFormat() string
+}
+
+// PartitionStructure partition
+type PartitionStructure interface {
+	Query() string
 }

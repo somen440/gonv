@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"reflect"
@@ -89,12 +89,14 @@ func TestMapDiffKey(t *testing.T) {
 			"type",
 			true,
 			[]string{"key1"},
+			0,
 		),
 		structure.IndexKey("key2"): structure.NewIndexStructure(
 			structure.IndexKey("key2"),
 			"type",
 			true,
 			[]string{"key2"},
+			1,
 		),
 	}
 	am := map[structure.IndexKey]*structure.IndexStructure{
@@ -103,6 +105,7 @@ func TestMapDiffKey(t *testing.T) {
 			"type",
 			true,
 			[]string{"key1"},
+			0,
 		),
 	}
 

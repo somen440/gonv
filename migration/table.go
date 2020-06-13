@@ -120,11 +120,26 @@ func NewTableCreateMigration(ts TableStructure) *TableCreateMigration {
 	migration.Up = "CREATE TABLE `" + ts.GetTable() + "` (\n"
 
 	bodies := []string{}
-	for _, column := range ts.GetColumnStructureList() {
-		bodies = append(bodies, column.GenerateCreateQuery())
+	orderIndex := 0
+	columnList := ts.GetColumnStructureList()
+	for orderIndex < len(columnList) {
+		for _, column := range columnList {
+			if column.Order == orderIndex {
+				bodies = append(bodies, column.GenerateCreateQuery())
+				break
+			}
+		}
+		orderIndex++
 	}
-	for _, index := range ts.GetIndexStructureList() {
-		bodies = append(bodies, index.GenerateCreateQuery())
+	orderIndex = 0
+	indexList := ts.GetIndexStructureList()
+	for orderIndex < len(indexList) {
+		for _, index := range indexList {
+			if index.Order == orderIndex {
+				bodies = append(bodies, index.GenerateCreateQuery())
+			}
+		}
+		orderIndex++
 	}
 	migration.Up += " " + strings.Join(bodies, ",\n ") + "\n"
 
@@ -138,7 +153,7 @@ func NewTableCreateMigration(ts TableStructure) *TableCreateMigration {
 		migration.Up += fmt.Sprintf("\n/*!50100 %s */", ts.GetPartition().Query())
 	}
 
-	migration.Down = "DROP TABLE " + ts.GetTable()
+	migration.Down = "DROP TABLE `" + ts.GetTable() + "`"
 
 	return migration
 }

@@ -17,10 +17,11 @@ type IndexStructure struct {
 	IsPrimary      bool
 	IsUnique       bool
 	IsBtree        bool
+	Order          int
 }
 
 // NewIndexStructure return IndexStructure
-func NewIndexStructure(keyName IndexKey, indexType string, isUnique bool, columnNameList []string) *IndexStructure {
+func NewIndexStructure(keyName IndexKey, indexType string, isUnique bool, columnNameList []string, order int) *IndexStructure {
 	return &IndexStructure{
 		Key:            IndexKey(keyName),
 		IndexType:      indexType,
@@ -28,6 +29,7 @@ func NewIndexStructure(keyName IndexKey, indexType string, isUnique bool, column
 		IsUnique:       isUnique,
 		IsPrimary:      keyName == "PRIMARY",
 		IsBtree:        strings.ToUpper(indexType) == "BTREE",
+		Order:          order,
 	}
 }
 

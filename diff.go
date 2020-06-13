@@ -10,11 +10,12 @@ import (
 
 // implements check
 var (
-	_ migration.ColumnStructure         = &structure.MySQL57ColumnStructure{}
-	_ migration.ModifiedColumnStructure = &structure.ModifiedColumnStructure{}
-	_ migration.IndexStructure          = &structure.IndexStructure{}
-	_ migration.TableStructure          = &structure.TableStructure{}
-	_ migration.ViewStructure           = &structure.ViewStructure{}
+	_ migration.ColumnStructure            = &structure.MySQL57ColumnStructure{}
+	_ migration.ModifiedColumnStructure    = &structure.ModifiedColumnStructure{}
+	_ migration.ModifiedColumnStructureSet = &structure.ModifiedColumnStructureSet{}
+	_ migration.IndexStructure             = &structure.IndexStructure{}
+	_ migration.TableStructure             = &structure.TableStructure{}
+	_ migration.ViewStructure              = &structure.ViewStructure{}
 )
 
 // Diff スキーマと db の diff を取る
@@ -55,24 +56,12 @@ func (d *Diff) Exec(beforeDbName string, schema string) error {
 	}
 	fmt.Println(after.String())
 
-	color.Info.Tips("migrations")
-	migrations, err := d.generate(before, after)
-	if err != nil {
-		return err
-	}
-	fmt.Println(migrations.String())
+	// color.Info.Tips("migrations")
+	// migrations, err := d.generate(before, after)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Println(migrations.String())
 
 	return nil
-}
-
-func (d *Diff) generate(before, after *structure.DatabaseStructure) (*migration.List, error) {
-	results := &migration.List{}
-
-	tableMigrations, err := d.factory.CreateTableMigrationList(before, after)
-	if err != nil {
-		return nil, err
-	}
-	results.Merge(tableMigrations)
-
-	return results, nil
 }

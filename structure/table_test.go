@@ -15,8 +15,8 @@ func createTableSt() *TableStructure {
 		DefaultCharset: "utf8mb4",
 		Collate:        "utf8mb4_unicode_ci",
 		Properties:     []string{},
-		ColumnStructureList: []*MySQL57ColumnStructure{
-			{
+		ColumnStructureList: map[ColumnField]*MySQL57ColumnStructure{
+			ColumnField("id"): {
 				Field:   ColumnField("id"),
 				Type:    "bigint(20)",
 				Default: "",
@@ -28,7 +28,7 @@ func createTableSt() *TableStructure {
 				Properties:           []string{},
 				GenerationExpression: "",
 			},
-			{
+			ColumnField("name"): {
 				Field:                ColumnField("name"),
 				Type:                 "varchar(255)",
 				Default:              "",
@@ -48,12 +48,12 @@ func TestGenerateModifiedColumnStructureSetMap(t *testing.T) {
 	t1 := createTableSt()
 	t2 := createTableSt()
 
-	t2.ColumnStructureList[0].Comment = "Sample ID dayo"
-	t2.ColumnStructureList[0].Attributes = []Attribute{Unsigned, Nullable}
-	t2.ColumnStructureList[0].Default = "10"
-	t2.ColumnStructureList[1].Field = ColumnField("fullname")
-	t2.ColumnStructureList[1].Default = "sample"
-	t2.ColumnStructureList[1].Type = "text"
+	t2.ColumnStructureList[ColumnField("id")].Comment = "Sample ID dayo"
+	t2.ColumnStructureList[ColumnField("id")].Attributes = []Attribute{Unsigned, Nullable}
+	t2.ColumnStructureList[ColumnField("id")].Default = "10"
+	t2.ColumnStructureList[ColumnField("name")].Field = ColumnField("fullname")
+	t2.ColumnStructureList[ColumnField("name")].Default = "sample"
+	t2.ColumnStructureList[ColumnField("name")].Type = "text"
 
 	setMap, err := t1.GenerateModifiedColumnStructureSetMap(t2, RenamedField{
 		"name": "fullname",

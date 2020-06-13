@@ -49,7 +49,7 @@ func assertEqualTable(t *testing.T, expected, actual *structure.TableStructure) 
 	assert.Equal(t, expected.Properties, actual.Properties)
 }
 
-func assertEqualColumn(t *testing.T, expected, actual []*structure.MySQL57ColumnStructure) {
+func assertEqualColumn(t *testing.T, expected, actual map[structure.ColumnField]*structure.MySQL57ColumnStructure) {
 	if !assert.Equal(t, len(expected), len(actual)) {
 		return
 	}

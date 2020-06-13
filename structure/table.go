@@ -37,7 +37,7 @@ type TableStructure struct {
 	Engine              string
 	DefaultCharset      string
 	Collate             string
-	ColumnStructureList []*MySQL57ColumnStructure
+	ColumnStructureList map[ColumnField]*MySQL57ColumnStructure
 	IndexStructureList  map[IndexKey]*IndexStructure
 	Partition           PartitionStructure
 	Properties          []string
@@ -239,7 +239,7 @@ func (ts *TableStructure) GetTable() string {
 }
 
 // GetColumnStructureList implements migrations TableStructure
-func (ts *TableStructure) GetColumnStructureList() []*MySQL57ColumnStructure {
+func (ts *TableStructure) GetColumnStructureList() map[ColumnField]*MySQL57ColumnStructure {
 	return ts.ColumnStructureList
 }
 

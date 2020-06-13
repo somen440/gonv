@@ -196,7 +196,7 @@ func (c *Converter) toColumnModifyMigrationLine(
 		results = append(results, mSet)
 	}
 
-	// todo: moved
+	// todo: moved #6
 
 	if len(results) == 0 {
 		return nil
@@ -227,6 +227,6 @@ func (c *Converter) toColumnAddMigrationLine(
 }
 
 func (c *Converter) toTablePartitionMigration(before, after *structure.TableStructure) migration.PartitionMigration {
-	// todo: partition
+	// todo: partition #1
 	return nil
 }

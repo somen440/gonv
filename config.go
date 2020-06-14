@@ -23,7 +23,12 @@ type DBConfig struct {
 	Database string
 }
 
-// DataSourceName sql.Open の第二引数に該当
+// DataSourceName sql.Open の第二引数に該当 DSN
 func (conf *DBConfig) DataSourceName() string {
-	return conf.User + ":" + conf.Password + "@tcp(" + conf.Host + ":" + conf.Port + ")/" + conf.Database
+	return conf.User + ":" + conf.Password + "@tcp(" + conf.Host + ":" + conf.Port + ")/" + conf.Database + "?charset=utf8mb4&parseTime=true"
+}
+
+// DataSourceNameNoDatabase sql.Open の第二引数に該当 DSN
+func (conf *DBConfig) DataSourceNameNoDatabase() string {
+	return conf.User + ":" + conf.Password + "@tcp(" + conf.Host + ":" + conf.Port + ")/"
 }

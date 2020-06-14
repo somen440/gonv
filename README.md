@@ -2,6 +2,7 @@
 
 ![actions](https://github.com/somen440/gonv/workflows/ci/badge.svg)
 [![codecov](https://codecov.io/gh/somen440/gonv/branch/master/graph/badge.svg)](https://codecov.io/gh/somen440/gonv)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 gonv create migration support tools. from https://github.com/howyi/conv
 

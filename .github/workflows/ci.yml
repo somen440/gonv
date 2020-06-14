@@ -1,8 +1,8 @@
 name: ci
 on:
   pull_request:
-    paths:
-      - '**.go'
+    # paths:
+    #   - '**.go'
 
 jobs:
   build:

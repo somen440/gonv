@@ -1,3 +1,19 @@
+/*
+Copyright 2020 somen440
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package converter
 
 import (
@@ -10,7 +26,7 @@ import (
 // ToTableDropMigration DatabaseStructure -> TableDropMigration
 func (c *Converter) ToTableDropMigration(
 	before, after *structure.DatabaseStructure,
-	ask *TableAsk,
+	a *TableAnswer,
 ) *migration.List {
 	if c.HasError() {
 		return nil
@@ -18,14 +34,14 @@ func (c *Converter) ToTableDropMigration(
 
 	results := &migration.List{}
 
-	if len(ask.DroppedTableList) == 0 {
+	if len(a.DroppedTableList) == 0 {
 		return nil
 	}
 
 	beforeAll := before.ListToFilterTableType()
 	afterAll := after.ListToFilterTableType()
 
-	for _, table := range ask.DroppedTableList {
+	for _, table := range a.DroppedTableList {
 		before, ok := beforeAll[table]
 		if !ok {
 			c.Err = fmt.Errorf("ToTableDropMigration not found table %s from %v", table, beforeAll)
@@ -46,7 +62,7 @@ func (c *Converter) ToTableDropMigration(
 // ToTableAlterMigrationAll DatabaseStructure -> TableAlterMigration
 func (c *Converter) ToTableAlterMigrationAll(
 	before, after *structure.DatabaseStructure,
-	ask *TableAsk,
+	a *TableAnswer,
 ) *migration.List {
 	if c.HasError() {
 		return nil
@@ -62,13 +78,13 @@ func (c *Converter) ToTableAlterMigrationAll(
 		if !ok {
 			continue
 		}
-		migration := c.toTableAlterMigration(beforeSt, afterSt, ask)
+		migration := c.toTableAlterMigration(beforeSt, afterSt, a)
 		if migration.IsAltered {
 			results.Add(migration)
 		}
 	}
 
-	for beforeTable, afterTable := range ask.RenamedTableList {
+	for beforeTable, afterTable := range a.RenamedTableList {
 		beforeSt, ok := beforeList[beforeTable]
 		if !ok {
 			c.Err = fmt.Errorf("ToTableAlterMigrationAll not found table %s from before %v", beforeTable, beforeList)
@@ -79,7 +95,7 @@ func (c *Converter) ToTableAlterMigrationAll(
 			c.Err = fmt.Errorf("ToTableAlterMigrationAll not found table %s from before %v", afterTable, afterList)
 			return nil
 		}
-		migration := c.toTableAlterMigration(beforeSt, afterSt, ask)
+		migration := c.toTableAlterMigration(beforeSt, afterSt, a)
 		if migration.IsAltered {
 			results.Add(migration)
 		}
@@ -90,13 +106,13 @@ func (c *Converter) ToTableAlterMigrationAll(
 
 func (c *Converter) toTableAlterMigration(
 	before, after *structure.TableStructure,
-	ask *TableAsk,
+	a *TableAnswer,
 ) *migration.TableAlterMigration {
 	return migration.NewTableAlterMigration(
 		before.Table,
 		after.Table,
-		c.toTableMigrationLineList(before, after, ask),
-		ask.RenamedColumnListAsStrings(),
+		c.toTableMigrationLineList(before, after, a),
+		a.RenamedColumnListAsStrings(),
 		c.toTablePartitionMigration(before, after),
 	)
 }

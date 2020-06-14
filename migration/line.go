@@ -1,3 +1,19 @@
+/*
+Copyright 2020 somen440
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package migration
 
 type migrationLine struct {
@@ -22,6 +38,10 @@ type ColumnAddMigrationLine struct {
 
 // NewColumnAddMigrationLine create ColumnAddMigrationLine
 func NewColumnAddMigrationLine(list []ModifiedColumnStructure) *ColumnAddMigrationLine {
+	if len(list) == 0 {
+		return nil
+	}
+
 	line := &ColumnAddMigrationLine{}
 
 	for _, column := range list {
@@ -39,6 +59,10 @@ type ColumnDropMigrationLine struct {
 
 // NewColumnDropMigrationLine create ColumnDropMigrationLine
 func NewColumnDropMigrationLine(columns []ModifiedColumnStructure) *ColumnDropMigrationLine {
+	if len(columns) == 0 {
+		return nil
+	}
+
 	line := &ColumnDropMigrationLine{}
 
 	cam := NewColumnAddMigrationLine(columns)
@@ -55,6 +79,9 @@ type ColumnModifyMigrationLine struct {
 
 // NewColumnModifyMigrationLine create ColumnModifyMigrationLine
 func NewColumnModifyMigrationLine(list []ModifiedColumnStructureSet) *ColumnModifyMigrationLine {
+	if len(list) == 0 {
+		return nil
+	}
 	line := &ColumnModifyMigrationLine{}
 	for _, set := range list {
 		line.upLineList = append(line.upLineList, set.UpStructure().GenerateChangeQuery())
@@ -70,6 +97,9 @@ type IndexAddMigrationLine struct {
 
 // NewIndexAddMigrationLine create IndexAddMigrationLine
 func NewIndexAddMigrationLine(list []IndexStructure) *IndexAddMigrationLine {
+	if len(list) == 0 {
+		return nil
+	}
 	line := &IndexAddMigrationLine{}
 
 	for _, i := range list {
@@ -87,6 +117,9 @@ type IndexDropMigrationLine struct {
 
 // NewIndexIndexDropMigrationLine create IndexDropMigrationLine
 func NewIndexIndexDropMigrationLine(list []IndexStructure) *IndexDropMigrationLine {
+	if len(list) == 0 {
+		return nil
+	}
 	line := &IndexDropMigrationLine{}
 
 	iam := NewIndexAddMigrationLine(list)
@@ -134,6 +167,9 @@ type PartitionRemoveMigration struct {
 
 // NewPartitionRemoveMigration create PartitionRemoveMigration
 func NewPartitionRemoveMigration(before PartitionStructure) *PartitionRemoveMigration {
+	if before == nil {
+		return nil
+	}
 	p := &PartitionRemoveMigration{}
 	p.Up = "REMOVE PARTITIONING"
 	p.Down = before.Query()
@@ -147,6 +183,9 @@ type PartitionResetMigration struct {
 
 // NewPartitionResetMigration create PartitionResetMigration
 func NewPartitionResetMigration(before, after PartitionStructure) *PartitionResetMigration {
+	if before == nil || after == nil {
+		return nil
+	}
 	p := &PartitionResetMigration{}
 	p.Up = after.Query()
 	p.Down = before.Query()

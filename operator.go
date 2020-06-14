@@ -14,16 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package structure
+package main
 
-// Attribute column attribute
-type Attribute string
-
-// Attributes
-const (
-	Unsigned                 Attribute = "unsigned"
-	Nullable                 Attribute = "nullable"
-	AutoIncrement            Attribute = "auto_increment"
-	Stored                   Attribute = "stored"
-	OnUpdateCurrentTimestamp Attribute = "on update CURRENT_TIMESTAMP"
+import (
+	"github.com/somen440/gonv/converter"
+	"github.com/somen440/gonv/structure"
 )
+
+// Operator operate ask
+type Operator struct {
+	before *structure.DatabaseStructure
+	after  *structure.DatabaseStructure
+}
+
+// NewOperator return Operator
+func NewOperator(before, after *structure.DatabaseStructure) *Operator {
+	return &Operator{
+		before: before,
+		after:  after,
+	}
+}
+
+// Ask questions and generate answers
+func (o *Operator) Ask() *converter.ModifiedAnswer {
+	// todo: operate
+
+	return nil
+}

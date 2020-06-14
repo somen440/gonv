@@ -7,7 +7,7 @@ CREATE TABLE `sample_log` (
   `modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`,`month`),
   KEY `sample_id` (`sample_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='sample log table'
 /*!50100 PARTITION BY LIST (month)
 (PARTITION p1 VALUES IN (1) ENGINE = InnoDB,
  PARTITION p2 VALUES IN (2) ENGINE = InnoDB,

@@ -1,7 +1,24 @@
+/*
+Copyright 2020 somen440
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package migration
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -20,6 +37,9 @@ func NewMigrationLineList() *LineList {
 
 // Add add line
 func (ll *LineList) Add(line Line) {
+	if line == nil {
+		return
+	}
 	ll.list = append(ll.list, line)
 }
 
@@ -32,6 +52,9 @@ func (ll *LineList) IsMigratable() bool {
 func (ll *LineList) Up() string {
 	upLineList := []string{}
 	for _, line := range ll.list {
+		if line == nil || reflect.ValueOf(line).IsNil() {
+			continue
+		}
 		upLineList = append(upLineList, line.UpList()...)
 	}
 	return " " + strings.Join(upLineList, ",\n ")
@@ -41,6 +64,9 @@ func (ll *LineList) Up() string {
 func (ll *LineList) Down() string {
 	downLineList := []string{}
 	for _, line := range ll.list {
+		if line == nil || reflect.ValueOf(line).IsNil() {
+			continue
+		}
 		downLineList = append(downLineList, line.DownList()...)
 	}
 	return " " + strings.Join(downLineList, ",\n ")
@@ -49,7 +75,7 @@ func (ll *LineList) Down() string {
 // Merge args
 func (ll *LineList) Merge(args ...Line) {
 	for _, line := range args {
-		if line == nil {
+		if line == nil || reflect.ValueOf(line).IsNil() {
 			continue
 		}
 		ll.list = append(ll.list, line)

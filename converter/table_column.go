@@ -1,3 +1,19 @@
+/*
+Copyright 2020 somen440
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package converter
 
 import (
@@ -8,7 +24,7 @@ import (
 
 func (c *Converter) toTableMigrationLineList(
 	before, after *structure.TableStructure,
-	ask *TableAsk,
+	a *TableAnswer,
 ) *migration.LineList {
 	if c.HasError() {
 		return nil
@@ -16,45 +32,27 @@ func (c *Converter) toTableMigrationLineList(
 
 	results := migration.NewMigrationLineList()
 
+	var indexFirst *migration.IndexDropMigrationLine
+	var indexLast *migration.IndexAddMigrationLine
 	indexAll := c.toIndexAllMigrationLine(before, after)
+	if indexAll != nil {
+		indexFirst = indexAll.First
+		indexLast = indexAll.Last
+	}
 
-	if line := c.toTableRenameMigrationLine(before, after); line != nil {
-		results.Add(line)
-	}
-	if line := c.toTableCommentMigrationLine(before, after); line != nil {
-		results.Add(line)
-	}
-	if line := c.toTableEngineMigrationLine(before, after); line != nil {
-		results.Add(line)
-	}
-	if line := c.toTableDefaultCharsetMigrationLine(before, after); line != nil {
-		results.Add(line)
-	}
-	if line := c.toTableCollateMigrationLine(before, after); line != nil {
-		results.Add(line)
-	}
-	if line := c.toTableCollateMigrationLine(before, after); line != nil {
-		results.Add(line)
-	}
-	if indexAll != nil {
-		if line := indexAll.First; line != nil {
-			results.Add(line)
-		}
-	}
-	if line := c.toColumnDropMigrationLine(before, after, ask); line != nil {
-		results.Add(line)
-	}
-	if line := c.toColumnModifyMigrationLine(before, after, ask); line != nil {
-		results.Add(line)
-	}
-	if line := c.toColumnAddMigrationLine(before, after); line != nil {
-		results.Add(line)
-	}
-	if indexAll != nil {
-		if line := indexAll.Last; line != nil {
-			results.Add(line)
-		}
-	}
+	results.Merge(
+		c.toTableRenameMigrationLine(before, after),
+		c.toTableCommentMigrationLine(before, after),
+		c.toTableEngineMigrationLine(before, after),
+		c.toTableDefaultCharsetMigrationLine(before, after),
+		c.toTableCollateMigrationLine(before, after),
+		c.toTableCollateMigrationLine(before, after),
+		indexFirst,
+		c.toColumnDropMigrationLine(before, after, a),
+		c.toColumnModifyMigrationLine(before, after, a),
+		c.toColumnAddMigrationLine(before, after),
+		indexLast,
+	)
 
 	return results
 }
@@ -158,12 +156,12 @@ func (c *Converter) toIndexAllMigrationLine(before, after *structure.TableStruct
 
 func (c *Converter) toColumnDropMigrationLine(
 	before, after *structure.TableStructure,
-	ask *TableAsk,
+	a *TableAnswer,
 ) *migration.ColumnDropMigrationLine {
 	if c.HasError() {
 		return nil
 	}
-	dropped := ask.DroppedColumnList
+	dropped := a.DroppedColumnList
 	for _, v := range util.MapDiffKeys(before.ColumnStructureList, after.ColumnStructureList) {
 		dropped = append(dropped, structure.ColumnField(v))
 	}
@@ -180,7 +178,7 @@ func (c *Converter) toColumnDropMigrationLine(
 
 func (c *Converter) toColumnModifyMigrationLine(
 	before, after *structure.TableStructure,
-	ask *TableAsk,
+	a *TableAnswer,
 ) *migration.ColumnModifyMigrationLine {
 	if c.HasError() {
 		return nil
@@ -188,7 +186,7 @@ func (c *Converter) toColumnModifyMigrationLine(
 
 	results := []migration.ModifiedColumnStructureSet{}
 
-	mSetList, err := before.GenerateModifiedColumnStructureSetMap(after, ask.RenamedColumnList)
+	mSetList, err := before.GenerateModifiedColumnStructureSetMap(after, a.RenamedColumnList)
 	if err != nil {
 		c.Err = err
 	}

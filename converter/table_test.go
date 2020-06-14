@@ -26,7 +26,7 @@ func TestToTableDropMigration(t *testing.T) {
 	db2 := CreateMockDatabaseStructure()
 	delete(db2.Map, structure.TableName("sample_log"))
 
-	migrationList := converter.ToTableDropMigration(db1, db2, &TableAsk{
+	migrationList := converter.ToTableDropMigration(db1, db2, &TableAnswer{
 		DroppedTableList: []structure.TableName{
 			structure.TableName("sample_log"),
 		},
@@ -75,7 +75,7 @@ func TestToTableDropMigrationWithNotFoundTable(t *testing.T) {
 	db2 := CreateMockDatabaseStructure()
 	delete(db1.Map, structure.TableName("sample_log"))
 
-	migrationList := converter.ToTableDropMigration(db1, db2, &TableAsk{
+	migrationList := converter.ToTableDropMigration(db1, db2, &TableAnswer{
 		DroppedTableList: []structure.TableName{
 			structure.TableName("sample_log"),
 		},
@@ -91,7 +91,7 @@ func TestToTableDropMigrationWithFoundTable(t *testing.T) {
 	db1 := CreateMockDatabaseStructure()
 	db2 := CreateMockDatabaseStructure()
 
-	migrationList := converter.ToTableDropMigration(db1, db2, &TableAsk{
+	migrationList := converter.ToTableDropMigration(db1, db2, &TableAnswer{
 		DroppedTableList: []structure.TableName{
 			structure.TableName("sample_log"),
 		},
@@ -106,7 +106,7 @@ func TestToTableAlterMigrationAll(t *testing.T) {
 
 	db1 := CreateMockDatabaseStructure()
 	db2 := CreateMockDatabaseStructure()
-	ask := &TableAsk{
+	ask := &TableAnswer{
 		RenamedTableList: map[structure.TableName]structure.TableName{
 			structure.TableName("sample_log"): structure.TableName("m_sample_log"),
 		},

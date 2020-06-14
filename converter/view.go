@@ -26,7 +26,7 @@ func (c *Converter) ToViewAlterMigration(before, after *structure.DatabaseStruct
 // ToViewRenameMigration DatabaseStructure -> ViewRenameMigration
 func (c *Converter) ToViewRenameMigration(
 	before, after *structure.DatabaseStructure,
-	ask *ViewAsk,
+	a *ViewAnswer,
 ) *migration.List {
 	results := &migration.List{}
 

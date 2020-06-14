@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/color"
+	"github.com/somen440/gonv/converter"
 	"github.com/somen440/gonv/migration"
 	"github.com/somen440/gonv/structure"
 )
@@ -46,7 +47,7 @@ func (d *Diff) Exec(beforeDbName string, schema string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(before.String())
+	fmt.Println(before)
 
 	color.Info.Tips("create after database structures from schema")
 	fmt.Println()
@@ -54,14 +55,17 @@ func (d *Diff) Exec(beforeDbName string, schema string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(after.String())
+	fmt.Println(after)
 
-	// color.Info.Tips("migrations")
-	// migrations, err := d.generate(before, after)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println(migrations.String())
+	// operate ask
+	color.Info.Tips("question")
+	o := NewOperator(before, after)
+	answer := o.Ask()
+
+	color.Info.Tips("migrations")
+	c := converter.NewConverter()
+	mList := c.ConvertAll(before, after, answer)
+	fmt.Println(mList)
 
 	return nil
 }

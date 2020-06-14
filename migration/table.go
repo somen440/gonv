@@ -2,6 +2,7 @@ package migration
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -20,6 +21,9 @@ func NewMigrationLineList() *LineList {
 
 // Add add line
 func (ll *LineList) Add(line Line) {
+	if line == nil {
+		return
+	}
 	ll.list = append(ll.list, line)
 }
 
@@ -32,6 +36,9 @@ func (ll *LineList) IsMigratable() bool {
 func (ll *LineList) Up() string {
 	upLineList := []string{}
 	for _, line := range ll.list {
+		if line == nil || reflect.ValueOf(line).IsNil() {
+			continue
+		}
 		upLineList = append(upLineList, line.UpList()...)
 	}
 	return " " + strings.Join(upLineList, ",\n ")
@@ -41,6 +48,9 @@ func (ll *LineList) Up() string {
 func (ll *LineList) Down() string {
 	downLineList := []string{}
 	for _, line := range ll.list {
+		if line == nil || reflect.ValueOf(line).IsNil() {
+			continue
+		}
 		downLineList = append(downLineList, line.DownList()...)
 	}
 	return " " + strings.Join(downLineList, ",\n ")
@@ -49,7 +59,7 @@ func (ll *LineList) Down() string {
 // Merge args
 func (ll *LineList) Merge(args ...Line) {
 	for _, line := range args {
-		if line == nil {
+		if line == nil || reflect.ValueOf(line).IsNil() {
 			continue
 		}
 		ll.list = append(ll.list, line)

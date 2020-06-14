@@ -59,7 +59,7 @@ func main() {
 			{
 				Name:      "diff",
 				Usage:     "diff schema <-> database.",
-				ArgsUsage: "<database>",
+				ArgsUsage: "<database> <schema>",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:  "driver",

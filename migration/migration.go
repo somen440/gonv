@@ -54,12 +54,18 @@ type List struct {
 
 // Add table migration
 func (l *List) Add(migration Migration) {
+	if migration == nil {
+		return
+	}
 	l.list = append(l.list, migration)
 }
 
 // Merge migrations
 func (l *List) Merge(targetsList ...*List) {
 	for _, targets := range targetsList {
+		if targets == nil || len(targets.list) == 0 {
+			continue
+		}
 		l.list = append(l.list, targets.list...)
 	}
 }

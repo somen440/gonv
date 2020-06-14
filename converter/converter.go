@@ -33,14 +33,23 @@ func (c *Converter) HasError() bool {
 //   3. ADD
 func (c *Converter) ConvertAll(
 	before, after *structure.DatabaseStructure,
-	ask *ModifiedAsk,
+	a *ModifiedAnswer,
 ) *migration.List {
 	results := &migration.List{}
 
+	tableAnswer := &TableAnswer{}
+	if a != nil {
+		tableAnswer = a.Table
+	}
+	viewAnser := &ViewAnswer{}
+	if a != nil {
+		viewAnser = a.View
+	}
+
 	// table
 	results.Merge(
-		c.ToTableDropMigration(before, after, ask.Table),
-		c.ToTableAlterMigrationAll(before, after, ask.Table),
+		c.ToTableDropMigration(before, after, tableAnswer),
+		c.ToTableAlterMigrationAll(before, after, tableAnswer),
 		c.ToTableCreateMigration(before, after),
 	)
 
@@ -48,7 +57,7 @@ func (c *Converter) ConvertAll(
 	results.Merge(
 		c.ToViewDropMigration(before, after),
 		c.ToViewAlterMigration(before, after),
-		c.ToViewRenameMigration(before, after, ask.View),
+		c.ToViewRenameMigration(before, after, viewAnser),
 		c.ToViewCreateMigration(before, after),
 	)
 

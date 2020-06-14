@@ -38,7 +38,7 @@ diff:
 
 .PHONY: test
 test:
-	go test -v ./...
+	go test -v -cover -coverprofile=cover.out ./...
 
 .PHONY: lint
 lint:

@@ -1,5 +1,8 @@
 # gonv
 
+![actions](https://github.com/somen440/gonv/workflows/ci/badge.svg)
+[![codecov](https://codecov.io/gh/somen440/gonv/branch/master/graph/badge.svg)](https://codecov.io/gh/somen440/gonv)
+
 gonv create migration support tools. from https://github.com/howyi/conv
 
 ## Getting Started

@@ -38,7 +38,7 @@ diff:
 
 .PHONY: test
 test:
-	go test -v -race -coverprofile=cover.txt -covermode=atomic .
+	go test -v -race -coverprofile=cover.txt -covermode=atomic ./...
 
 .PHONY: lint
 lint:

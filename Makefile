@@ -38,13 +38,13 @@ diff:
 
 .PHONY: test
 test:
-	go test -v ./...
+	go test -v -race -coverprofile=cover.txt -covermode=atomic .
 
 .PHONY: lint
 lint:
 	docker run --rm \
 		-v ${PWD}:/app \
-		-w /app -it \
+		-w /app \
 		golangci/golangci-lint:v1.26.0 \
 		golangci-lint run ./...
 

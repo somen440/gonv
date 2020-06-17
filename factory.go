@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -283,6 +284,7 @@ func (f *Factory) createIndexStructureList(tableName string) (map[structure.Inde
 	}
 	type IndexSummaryGroup map[structure.IndexKey][]IndexSummary
 
+	indexOrders := []structure.IndexKey{}
 	group := IndexSummaryGroup{}
 	for _, index := range indexes {
 		columnName := index.ColumnName
@@ -295,23 +297,41 @@ func (f *Factory) createIndexStructureList(tableName string) (map[structure.Inde
 			ColumnName: columnName,
 			IndexType:  index.IndexType,
 		})
+		found := false
+		for _, indexOrder := range indexOrders {
+			if k == indexOrder {
+				found = true
+			}
+		}
+		if found {
+			continue
+		}
+		indexOrders = append(indexOrders, k)
 	}
 
-	resultsIndex := 0
 	results := map[structure.IndexKey]*structure.IndexStructure{}
 	for keyName, list := range group {
 		columnNameList := make([]string, len(list))
 		for i, index := range list {
 			columnNameList[i] = index.ColumnName
 		}
+		indexOrder := -1
+		for i, order := range indexOrders {
+			if keyName == order {
+				indexOrder = i
+				break
+			}
+		}
+		if indexOrder == -1 {
+			return nil, errors.New("not found index")
+		}
 		results[keyName] = structure.NewIndexStructure(
 			keyName,
 			list[0].IndexType,
 			list[0].IsUnique,
 			columnNameList,
-			resultsIndex,
+			indexOrder,
 		)
-		resultsIndex++
 	}
 	return results, nil
 }

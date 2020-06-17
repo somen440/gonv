@@ -41,15 +41,21 @@ func setUpTestFactory() (*Factory, func()) {
 }
 
 func TestCreateDatabaseStructure(t *testing.T) {
-	factory, df := setUpTestFactory()
-	defer df()
+	i := 1000
+	for i > 0 {
+		func() {
+			factory, df := setUpTestFactory()
+			defer df()
 
-	expected := converter.CreateMockDatabaseStructure()
-	actual, err := factory.CreateDatabaseStructure("test")
-	assert.Nil(t, err)
+			expected := converter.CreateMockDatabaseStructure()
+			actual, err := factory.CreateDatabaseStructure("test")
+			assert.Nil(t, err)
 
-	assertEqualTable(t, expected.Map[structure.TableName("sample")], actual.Map[structure.TableName("sample")])
-	assertEqualTable(t, expected.Map[structure.TableName("sample_log")], actual.Map[structure.TableName("sample_log")])
+			assertEqualTable(t, expected.Map[structure.TableName("sample")], actual.Map[structure.TableName("sample")])
+			assertEqualTable(t, expected.Map[structure.TableName("sample_log")], actual.Map[structure.TableName("sample_log")])
+		}()
+		i--
+	}
 }
 
 func assertEqualTable(t *testing.T, expected, actual *structure.TableStructure) {

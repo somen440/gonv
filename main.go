@@ -19,6 +19,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 )
@@ -99,6 +100,10 @@ func main() {
 						Value:   "3306",
 						Aliases: []string{"P"},
 					},
+					&cli.StringFlag{
+						Name:    "ignores",
+						Aliases: []string{"I"},
+					},
 				},
 				Action: diffAction,
 			},
@@ -143,5 +148,5 @@ func diffAction(c *cli.Context) error {
 		Database: database,
 	}
 	diff := NewDiff(conf)
-	return diff.Exec(database, schema)
+	return diff.Exec(database, schema, strings.Split(c.String("ignores"), ","))
 }

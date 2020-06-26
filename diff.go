@@ -54,12 +54,12 @@ func NewDiff(conf *DBConfig) *Diff {
 }
 
 // Exec 実行
-func (d *Diff) Exec(beforeDbName string, schema string) error {
+func (d *Diff) Exec(beforeDbName string, schema string, ignores []string) error {
 	defer d.gdo.Close()
 
 	color.Info.Tips("create before database structures from db")
 	fmt.Println()
-	before, err := d.factory.CreateDatabaseStructure(beforeDbName)
+	before, err := d.factory.CreateDatabaseStructure(beforeDbName, ignores)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (d *Diff) Exec(beforeDbName string, schema string) error {
 
 	color.Info.Tips("create after database structures from schema")
 	fmt.Println()
-	after, err := d.factory.CreateDatabaseStructureFromSchema("tmp_"+beforeDbName, schema)
+	after, err := d.factory.CreateDatabaseStructureFromSchema("tmp_"+beforeDbName, schema, ignores)
 	if err != nil {
 		return err
 	}

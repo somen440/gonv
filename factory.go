@@ -35,7 +35,7 @@ type Factory struct {
 }
 
 // CreateDatabaseStructureFromSchema create database structure
-func (f *Factory) CreateDatabaseStructureFromSchema(dbName, schema string) (*structure.DatabaseStructure, error) {
+func (f *Factory) CreateDatabaseStructureFromSchema(dbName, schema string, ignores []string) (*structure.DatabaseStructure, error) {
 	if f, err := os.Stat(schema); !(!os.IsNotExist(err) && f.IsDir()) {
 		return nil, fmt.Errorf("%s id not dir: %w", schema, err)
 	}
@@ -69,11 +69,11 @@ func (f *Factory) CreateDatabaseStructureFromSchema(dbName, schema string) (*str
 		}
 	}
 
-	return f.CreateDatabaseStructure(dbName)
+	return f.CreateDatabaseStructure(dbName, ignores)
 }
 
 // CreateDatabaseStructure create database structure
-func (f *Factory) CreateDatabaseStructure(dbName string) (*structure.DatabaseStructure, error) {
+func (f *Factory) CreateDatabaseStructure(dbName string, ignores []string) (*structure.DatabaseStructure, error) {
 	if err := f.gdo.SwitchDb(dbName); err != nil {
 		return nil, fmt.Errorf("SwitchDb error: %w", err)
 	}
@@ -82,6 +82,15 @@ func (f *Factory) CreateDatabaseStructure(dbName string) (*structure.DatabaseStr
 		Map: map[structure.TableName]*structure.TableStructure{},
 	}
 	for _, table := range f.gdo.ShowTables() {
+		isFound := false
+		for _, v := range ignores {
+			if table == v {
+				isFound = true
+			}
+		}
+		if isFound {
+			continue
+		}
 		ts, err := f.createTableStructure(dbName, table)
 		if err != nil {
 			return nil, err

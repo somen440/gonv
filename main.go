@@ -17,11 +17,16 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/urfave/cli/v2"
+)
+
+const (
+	version = "v1.0.2"
 )
 
 func main() {
@@ -106,6 +111,13 @@ func main() {
 					},
 				},
 				Action: diffAction,
+			},
+			{
+				Name: "version",
+				Action: func(c *cli.Context) error {
+					fmt.Println(version)
+					return nil
+				},
 			},
 		},
 	}

@@ -48,7 +48,7 @@ func TestCreateDatabaseStructure(t *testing.T) {
 			defer df()
 
 			expected := converter.CreateMockDatabaseStructure()
-			actual, err := factory.CreateDatabaseStructure("test")
+			actual, err := factory.CreateDatabaseStructure("test", []string{})
 			assert.Nil(t, err)
 
 			assertEqualTable(t, expected.Map[structure.TableName("sample")], actual.Map[structure.TableName("sample")])

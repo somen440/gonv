@@ -22,8 +22,9 @@ import "github.com/somen440/gonv/structure"
 func CreateMockDatabaseStructure() *structure.DatabaseStructure {
 	return &structure.DatabaseStructure{
 		Map: map[structure.TableName]*structure.TableStructure{
-			structure.TableName("sample"):     CreateMockSampleTableStructure(),
-			structure.TableName("sample_log"): CreateMockSampleLogTableStructure(),
+			structure.TableName("sample"):      CreateMockSampleTableStructure(),
+			structure.TableName("sample_log"):  CreateMockSampleLogTableStructure(),
+			structure.TableName("sample_name"): CreateMockSampleNameTableStructure(),
 		},
 	}
 }
@@ -185,6 +186,137 @@ func CreateMockSampleLogTableStructure() *structure.TableStructure {
 		IndexStructureList: map[structure.IndexKey]*structure.IndexStructure{
 			structure.IndexKey("PRIMARY"):   structure.NewIndexStructure("PRIMARY", "BTREE", true, []string{"id", "month"}, 0),
 			structure.IndexKey("sample_id"): structure.NewIndexStructure("sample_id", "BTREE", false, []string{"sample_id"}, 1),
+		},
+		Partition: &structure.PartitionLongStructure{
+			Type:  "LIST",
+			Value: "month",
+			Parts: []*structure.PartitionPartStructure{
+				{
+					Name:     "p1",
+					Operator: "IN",
+					Value:    "1",
+					Comment:  "",
+				},
+				{
+					Name:     "p2",
+					Operator: "IN",
+					Value:    "2",
+					Comment:  "",
+				},
+				{
+					Name:     "p3",
+					Operator: "IN",
+					Value:    "3",
+					Comment:  "",
+				},
+				{
+					Name:     "p4",
+					Operator: "IN",
+					Value:    "4",
+					Comment:  "",
+				},
+				{
+					Name:     "p5",
+					Operator: "IN",
+					Value:    "5",
+					Comment:  "",
+				},
+				{
+					Name:     "p6",
+					Operator: "IN",
+					Value:    "6",
+					Comment:  "",
+				},
+				{
+					Name:     "p7",
+					Operator: "IN",
+					Value:    "7",
+					Comment:  "",
+				},
+				{
+					Name:     "p8",
+					Operator: "IN",
+					Value:    "8",
+					Comment:  "",
+				},
+				{
+					Name:     "p9",
+					Operator: "IN",
+					Value:    "9",
+					Comment:  "",
+				},
+				{
+					Name:     "p10",
+					Operator: "IN",
+					Value:    "10",
+					Comment:  "",
+				},
+				{
+					Name:     "p11",
+					Operator: "IN",
+					Value:    "11",
+					Comment:  "",
+				},
+				{
+					Name:     "p12",
+					Operator: "IN",
+					Value:    "12",
+					Comment:  "",
+				},
+			},
+		},
+		Properties: []string{},
+	}
+}
+
+// CreateMockSampleNameTableStructure mock table sample なめ
+func CreateMockSampleNameTableStructure() *structure.TableStructure {
+	return &structure.TableStructure{
+		Table:          "sample_name",
+		Type:           structure.TableType,
+		Comment:        "sample name table",
+		Engine:         "InnoDB",
+		DefaultCharset: "utf8mb4",
+		Collate:        "utf8mb4_unicode_ci",
+		ColumnStructureList: map[structure.ColumnField]*structure.MySQL57ColumnStructure{
+			structure.ColumnField("name"): {
+				Field:                structure.ColumnField("name"),
+				Type:                 "varchar(255)",
+				Default:              "",
+				Comment:              "",
+				Attributes:           []structure.Attribute{},
+				CollationName:        "utf8mb4_unicode_ci",
+				Properties:           []string{},
+				GenerationExpression: "",
+				Order:                3,
+			},
+			structure.ColumnField("created"): {
+				Field:                structure.ColumnField("created"),
+				Type:                 "datetime",
+				Default:              "CURRENT_TIMESTAMP",
+				Comment:              "",
+				Attributes:           []structure.Attribute{},
+				CollationName:        "",
+				Properties:           []string{},
+				GenerationExpression: "",
+				Order:                4,
+			},
+			structure.ColumnField("modified"): {
+				Field:   structure.ColumnField("modified"),
+				Type:    "datetime",
+				Default: "CURRENT_TIMESTAMP",
+				Comment: "",
+				Attributes: []structure.Attribute{
+					structure.OnUpdateCurrentTimestamp,
+				},
+				CollationName:        "",
+				Properties:           []string{},
+				GenerationExpression: "",
+				Order:                5,
+			},
+		},
+		IndexStructureList: map[structure.IndexKey]*structure.IndexStructure{
+			structure.IndexKey("PRIMARY"): structure.NewIndexStructure("PRIMARY", "BTREE", true, []string{"name"}, 0),
 		},
 		Partition: &structure.PartitionLongStructure{
 			Type:  "LIST",

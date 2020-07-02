@@ -90,6 +90,7 @@ type TableAlterMigration struct {
 	RenamedNameList []string
 }
 
+// PartitionMigration partition migration
 type PartitionMigration interface {
 	UpQuery() string
 	DownQuery() string

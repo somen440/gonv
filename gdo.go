@@ -147,7 +147,7 @@ type ShowTableStatusLikeResult struct {
 	MaxDataLength int
 	IndexLength   int
 	DataFree      int
-	AutoIncrement int
+	AutoIncrement interface{}
 	CreateTime    time.Time
 	UpdateTime    sql.NullTime
 	CheckTime     sql.NullTime
@@ -234,7 +234,7 @@ func (gdo *GDO) SelectPartitions(dbName, tableName string) ([]SelectPartitionsRe
 	rows, err := gdo.db.Query(
 		fmt.Sprintf(`select * from information_schema.PARTITIONS
 where table_schema = '%s'
-	and table_name = '%s' 
+	and table_name = '%s'
 order by PARTITION_ORDINAL_POSITION asc;
 `, dbName, tableName))
 	if err != nil {
@@ -313,7 +313,7 @@ func (gdo *GDO) SelectColumns(dbName, tableName string) ([]SelectColumnsResult, 
 	rows, err := gdo.db.Query(
 		fmt.Sprintf(`select * from information_schema.COLUMNS
 where table_schema = '%s'
-	and table_name = '%s' 
+	and table_name = '%s'
 order by ORDINAL_POSITION asc;
 `, dbName, tableName))
 	if err != nil {
